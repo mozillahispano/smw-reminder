@@ -20,14 +20,9 @@ def mailstructure(self):
     x = [i for i in range(n)]
     ncolab = "colab['items']["+str(varl)+"]['label']"
     mcolab = "colab['items']["+str(varl)+"]['correo']"
-    colab_new["name"] = ncolab
-    colab_new["mail"] = mcolab
-    b = json.dumps(colab_new)
-    self.response.out.write(b)
+    b = json.dumps({'name':ncolab,'mail':mcolab},sort_keys=True)
 
 # repeat this for all
-
-#mailstructure(self,varl=0)
 
 # In colab transform <xxx arroba xxx punto xx> in <xxx@xxx.xxx>
 
