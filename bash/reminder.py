@@ -16,13 +16,16 @@ n = len(colab["items"])
 # transform list in dictionary
 
 colab_new = {}
-def mailstructure(self):
-    x = [i for i in range(n)]
-    ncolab = "colab['items']["+str(varl)+"]['label']"
-    mcolab = "colab['items']["+str(varl)+"]['correo']"
-    b = json.dumps({'name':ncolab,'mail':mcolab},sort_keys=True)
 
-# repeat this for all
+vars = [i for i in range(n)]
+for var in vars:
+    ncolab = colab['items'][int(var)]['label']
+    try:
+        mcolab = colab['items'][int(var)]['correo']
+    except KeyError:
+        mcolab = "no tiene"
+    b = json.dumps({'name':ncolab,'mail':mcolab},sort_keys=True)
+    print b
 
 # In colab transform <xxx arroba xxx punto xx> in <xxx@xxx.xxx>
 
