@@ -24,10 +24,13 @@ for var in vars:
         mcolab = colab['items'][int(var)]['correo']
     except KeyError:
         mcolab = "no tiene"
+    mcolab = [w.replace('ARROBA','@') for w in mcolab]
+    mcolab = [w.replace('arroba','@') for w in mcolab]
+    mcolab = [w.replace('PUNTO','.') for w in mcolab]
+    mcolab = [w.replace('punto','.') for w in mcolab]
+    mcolab = [w.replace(' ','') for w in mcolab]
     b = json.dumps({'name':ncolab,'mail':mcolab},sort_keys=True)
     print b
-
-# In colab transform <xxx arroba xxx punto xx> in <xxx@xxx.xxx>
 
 # append mails with tareas respons (new file)
 
