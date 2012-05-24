@@ -29,8 +29,7 @@ for var in vars:
     mcolab = [w.replace('PUNTO','.') for w in mcolab]
     mcolab = [w.replace('punto','.') for w in mcolab]
     mcolab = [w.replace(' ','') for w in mcolab]
-    b = json.dumps({'name':ncolab,'mail':mcolab},sort_keys=True)
-    print b
+    colab_new.update({ncolab:mcolab})
 
 # append mails with tareas respons (new file)
 
