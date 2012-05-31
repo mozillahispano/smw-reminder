@@ -32,6 +32,25 @@ for var in vars:
     colab_new.update({ncolab:mcolab})
 
 # append mails with tareas respons (new file)
+n = len(tareas['items'])
+
+x = [i for i in range(n)]
+
+tareas_new = {}
+for i in x:
+    try:
+        resp = tareas['items'][int(i)]['respon.']
+    except KeyError:
+        resp = "sin asignar"
+    try:
+        resp1 = 'Usuario:'+resp[0]
+    except KeyError:
+        resp1= "no user"
+    try:
+        mailresp =colab_new[resp1]
+    except KeyError:
+        mailresp="no mail"
+    tareas_new.update({'mail'+str(i):mailresp})
 
 # send mails
 '''
