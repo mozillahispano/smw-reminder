@@ -53,14 +53,18 @@ for i in x:
     tareas_new.update({'mail'+str(i):mailresp})
 
 # send mails
-'''
+
 import smtplib
 import string
- 
+
 SUBJECT = "You have a task pending"
-TO = ""
 FROM = "mail@mydomain.com"
-text = ""
+for i in x:
+    TO = tareas_new['mail'+str(i)]
+    respon = tareas['items'][int(i)]['respon.']
+    estado = tareas['items'][int(i)]['estado']
+    label = tareas['items'][int(i)]['label']
+    text = "Hola"+ respon + "tienes asignada la tarea:"+ label+",la cual se encuentra como" + label
 HOST = 
 BODY = string.join((
         "From: %s" % FROM,
@@ -72,4 +76,4 @@ BODY = string.join((
 server = smtplib.SMTP(HOST)
 server.sendmail(FROM, [TO], BODY)
 server.quit()
-'''
+
