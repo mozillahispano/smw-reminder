@@ -26,8 +26,10 @@ for var in vars:
         mcolab = "no tiene"
     mcolab = [w.replace('ARROBA','@') for w in mcolab]
     mcolab = [w.replace('arroba','@') for w in mcolab]
+    mcolab = [w.replace('AT','@') for w in mcolab]
     mcolab = [w.replace('PUNTO','.') for w in mcolab]
     mcolab = [w.replace('punto','.') for w in mcolab]
+    mcolab = [w.replace('DOT','.') for w in mcolab]
     mcolab = [w.replace(' ','') for w in mcolab]
     colab_new.update({ncolab:mcolab})
 
@@ -47,33 +49,42 @@ for i in x:
     except KeyError:
         resp1= "no user"
     try:
-        mailresp =colab_new[resp1]
+        mailresp =colab_new[resp1][0]
     except KeyError:
         mailresp="no mail"
-    tareas_new.update({'mail'+str(i):mailresp})
+    tareas_new.update({'mail'+str(i):mailresp,'respon'+str(i):resp})
 
 # send mails
-
 import smtplib
 import string
+import unicodedata
+
+FROM = "tareas@mozhipano.com"
+HOST =  # 'mailserver:port'
+username = # 'username'
+password = # 'password'
 
 SUBJECT = "You have a task pending"
-FROM = "mail@mydomain.com"
+
+
 for i in x:
     TO = tareas_new['mail'+str(i)]
-    respon = tareas['items'][int(i)]['respon.']
-    estado = tareas['items'][int(i)]['estado']
-    label = tareas['items'][int(i)]['label']
-    text = "Hola"+ respon + "tienes asignada la tarea:"+ label+",la cual se encuentra como" + label
-HOST = 
-BODY = string.join((
-        "From: %s" % FROM,
-        "To: %s" % TO,
-        "Subject: %s" % SUBJECT ,
-        "",
-        text
-        ), "\r\n")
-server = smtplib.SMTP(HOST)
-server.sendmail(FROM, [TO], BODY)
-server.quit()
-
+    if (TO == 'no mail'):
+        pass
+    else:
+        respon = tareas_new['respon'+str(i)][0]
+        estado = tareas['items'][int(i)]['estado'][0]
+        label = unicodedata.normalize('NFKD',tareas['items'][int(i)]['label']).encode('latin-1','ignore')
+        text = "Hola, "+ respon + " tienes asignada la tarea "+ label+", la cual se encuentra como " + estado +", pero ya vencio la fecha limite asignada"
+        BODY = string.join((
+            "From: %s" % FROM,
+            "To: %s" % TO,
+            "Subject: %s" % SUBJECT ,
+            "",
+            text
+            ),"\r\n") 
+        server = smtplib.SMTP(HOST)
+        server.starttls()
+        server.login(username,password)
+        server.sendmail(FROM, [TO], BODY)
+        server.quit()
