@@ -1,5 +1,15 @@
 # MozReminder
 
+## Config
+
+In bash/reminder.py edit
+
+```bash
+HOST =  'mailserver:port'
+username = 'username'
+password = 'password'
+```
+
 ## Install
 ```bash
 virtualenv --no-site-packages env
