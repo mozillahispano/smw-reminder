@@ -18,8 +18,7 @@ n = len(colab["items"])
 
 colab_new = {}
 
-vars = [i for i in range(n)]
-for var in vars:
+for var in range(n):
     ncolab = colab['items'][int(var)]['label']
     try:
         mcolab = colab['items'][int(var)]['correo']
@@ -37,10 +36,8 @@ for var in vars:
 # append mails with tareas respons (new file)
 n = len(tareas['items'])
 
-x = [i for i in range(n)]
-
 tareas_new = {}
-for i in x:
+for i in range(n):
     try:
         resp = tareas['items'][int(i)]['respon.']
     except KeyError:
@@ -68,7 +65,7 @@ password = # 'password'
 SUBJECT = "You have a task pending"
 
 
-for i in x:
+for i in range(n):
     TO = tareas_new['mail'+str(i)]
     if (TO == 'no mail'):
         pass
