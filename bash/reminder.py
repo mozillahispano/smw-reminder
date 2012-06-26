@@ -37,21 +37,23 @@ for var in range(n):
 # append mails with tareas respons (new file)
 n = len(tasks['items'])
 
-tasks_new = {}
+tasks_new = []
 for i in range(n):
     try:
-        resp = tasks['items'][int(i)]['respon.']
+        l = len(tasks['items'][int(i)]['respon.'])
+        for s in range(l):
+            resp = tasks['items'][int(i)]['respon.'][s]
+            try:
+                resp1 = 'Usuario:'+resp
+            except KeyError:
+                resp1= "no user"
+            try:
+                mailresp = colab_new[resp1][0]
+            except KeyError:
+                mailresp="no mail"
+            tasks_new.append([resp,mailresp])
     except KeyError:
-        resp = "sin asignar"
-    try:
-        resp1 = 'Usuario:'+resp[0]
-    except KeyError:
-        resp1= "no user"
-    try:
-        mailresp =colab_new[resp1][0]
-    except KeyError:
-        mailresp="no mail"
-    tasks_new.update({'mail'+str(i):mailresp,'respon'+str(i):resp})
+        pass
 
 # send mails
 import smtplib
