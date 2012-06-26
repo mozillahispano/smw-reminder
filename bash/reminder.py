@@ -1,10 +1,11 @@
 #!/env/bin/python
+# -*- coding: utf-8 -*-
 
 # load jsons
 import urllib2
 import json
-json_tareas = urllib2.urlopen('https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategor%C3%ADa:Tarea-5D-5D-5B-5Bestado::!Finalizado-5D-5D/-3FResponsable%3DRespon./-3FArea/-3FProyecto/-3FEstado/-3FFechafin%3DL%C3%ADmite/mainlabel%3D/order%3DASC,ASC/sort%3DFechafin,Estado/format%3Djson').read()
-tareas = json.loads(json_tareas)
+json_tasks = urllib2.urlopen('https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategor%C3%ADa:Tarea-5D-5D-5B-5Bestado::!Finalizado-5D-5D/-3FResponsable%3DRespon./-3FArea/-3FProyecto/-3FEstado/-3FFechafin%3DL%C3%ADmite/mainlabel%3D/order%3DASC,ASC/sort%3DFechafin,Estado/format%3Djson').read()
+tasks = json.loads(json_tasks)
 json_colab = urllib2.urlopen('https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategoría:Colaborador-5D-5D/-3FCorreo/mainlabel%3D/format%3Djson').read()
 colab = json.loads(json_colab)
 n = len(colab["items"])
@@ -34,12 +35,12 @@ for var in range(n):
     colab_new.update({ncolab:mcolab})
 
 # append mails with tareas respons (new file)
-n = len(tareas['items'])
+n = len(tasks['items'])
 
-tareas_new = {}
+tasks_new = {}
 for i in range(n):
     try:
-        resp = tareas['items'][int(i)]['respon.']
+        resp = tasks['items'][int(i)]['respon.']
     except KeyError:
         resp = "sin asignar"
     try:
@@ -50,7 +51,7 @@ for i in range(n):
         mailresp =colab_new[resp1][0]
     except KeyError:
         mailresp="no mail"
-    tareas_new.update({'mail'+str(i):mailresp,'respon'+str(i):resp})
+    tasks_new.update({'mail'+str(i):mailresp,'respon'+str(i):resp})
 
 # send mails
 import smtplib
@@ -66,14 +67,14 @@ SUBJECT = "You have a task pending"
 
 
 for i in range(n):
-    TO = tareas_new['mail'+str(i)]
+    TO = tasks_new['mail'+str(i)]
     if (TO == 'no mail'):
         pass
     else:
-        respon = tareas_new['respon'+str(i)][0]
-        estado = tareas['items'][int(i)]['estado'][0]
-        label = unicodedata.normalize('NFKD',tareas['items'][int(i)]['label']).encode('latin-1','ignore')
-        text = "Hola, "+ respon + " tienes asignada la tarea "+ label+", la cual se encuentra como " + estado +", pero ya vencio la fecha limite asignada"
+        respon = tasks_new['respon'+str(i)][0]
+        status = tasks['items'][int(i)]['estado'][0]
+        label = unicodedata.normalize('NFKD',tasks['items'][int(i)]['label']).encode('latin-1','ignore')
+        text = "Hola, "+ respon + " tienes asignada la tarea "+ label+", la cual se encuentra como " + status +", pero ya vencio la fecha limite asignada"
         BODY = string.join((
             "From: %s" % FROM,
             "To: %s" % TO,
