@@ -71,9 +71,6 @@ HOST =  # 'mailserver:port'
 username = # 'username'
 password = # 'password'
 
-SUBJECT = "You have a task pending"
-
-
 for k,v in d.items():
     TO = k[1]
     if (TO == 'no mail'):
@@ -81,13 +78,15 @@ for k,v in d.items():
     else:
         respon = k[0]
         numtasks = len(v)
+        text = u"Hola %s, \n\nActualmente tienes %s tarea(s) asignada(s) a ti que están caducadas. Por favor revisa su estado y marcalas como finalizadas o amplia su fecha límite \n" % (respon, numtasks)
         for i in range(numtasks):
-            label = v[int(i)]
-            text = u"Hola %s Actualmente tienes %s tarea(s) asignada(s) a ti que están caducadas. Por favor revisa su estado y marcalas como finalizadas o amplia su fecha límite %s" % (respon, numtasks, label)
-            msg = MIMEText(unicode(text).encode('utf-8'))
-            msg['Subject'] = 'You have %s pending' % numtasks
-            server = smtplib.SMTP(HOST)
-            server.starttls()
-            server.login(username,password)
-            server.sendmail(FROM, [TO], msg.as_string())
-            server.quit()
+	    b = [w.replace(' ','_') for w in [v[int(i)]]]
+            text = text + '\n' + v[int(i)] + ' https://www.mozilla-hispano.org/documentacion/'+ b[0]
+	text = text + '\n\nSaludos'
+        msg = MIMEText(unicode(text).encode('utf-8'))
+        msg['Subject'] = '[Mozilla Hispano] Tienes %s tareas caducadas' % numtasks
+        server = smtplib.SMTP(HOST)
+        server.starttls()
+        server.login(username,password)
+        server.sendmail(FROM, [TO], msg.as_string())
+        server.quit()
