@@ -64,7 +64,7 @@ for k,v,p in tasks_new:
 # send mails
 import smtplib
 import string
-import unicodedata
+from email.mime.text import MIMEText
 
 FROM = "tareas@mozhipano.com"
 HOST =  # 'mailserver:port'
@@ -74,24 +74,20 @@ password = # 'password'
 SUBJECT = "You have a task pending"
 
 
-for i in range(n):
-    TO = tasks_new['mail'+str(i)]
+for k,v in d.items():
+    TO = k[1]
     if (TO == 'no mail'):
         pass
     else:
-        respon = tasks_new['respon'+str(i)][0]
-        status = tasks['items'][int(i)]['estado'][0]
-        label = unicodedata.normalize('NFKD',tasks['items'][int(i)]['label']).encode('latin-1','ignore')
-        text = "Hola, "+ respon + " tienes asignada la tarea "+ label+", la cual se encuentra como " + status +", pero ya vencio la fecha limite asignada"
-        BODY = string.join((
-            "From: %s" % FROM,
-            "To: %s" % TO,
-            "Subject: %s" % SUBJECT ,
-            "",
-            text
-            ),"\r\n") 
-        server = smtplib.SMTP(HOST)
-        server.starttls()
-        server.login(username,password)
-        server.sendmail(FROM, [TO], BODY)
-        server.quit()
+        respon = k[0]
+        numtasks = len(v)
+        for i in range(numtasks):
+            label = v[int(i)]
+            text = u"Hola %s Actualmente tienes %s tarea(s) asignada(s) a ti que están caducadas. Por favor revisa su estado y marcalas como finalizadas o amplia su fecha límite %s" % (respon, numtasks, label)
+            msg = MIMEText(unicode(text).encode('utf-8'))
+            msg['Subject'] = 'You have %s pending' % numtasks
+            server = smtplib.SMTP(HOST)
+            server.starttls()
+            server.login(username,password)
+            server.sendmail(FROM, [TO], msg.as_string())
+            server.quit()
