@@ -8,6 +8,7 @@ import string
 from email.mime.text import MIMEText
 from collections import defaultdict
 from datetime import datetime, timedelta
+from local_config import *
 
 json_tasks = urllib2.urlopen('https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategor%C3%ADa:Tarea-5D-5D-5B-5Bestado::!Finalizado-5D-5D/-3FResponsable%3DRespon./-3FArea/-3FProyecto/-3FEstado/-3FFechafin%3DL%C3%ADmite/mainlabel%3D/order%3DASC,ASC/sort%3DFechafin,Estado/format%3Djson/limit%3D1000').read()
 tasks = json.loads(json_tasks)
@@ -74,9 +75,6 @@ for i in range(n):
 
 # send mails
 FROM = "tareas@mozhipano.com"
-HOST =  # 'mailserver:port'
-username = # 'username'
-password = # 'password'
 
 def send_mail(txtmessage, txtsubject, tasks_new):
     d = defaultdict(list)
