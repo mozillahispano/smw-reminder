@@ -2,7 +2,7 @@
 
 ## Config
 
-In bash/reminder.py edit
+Create ``local_config.py``, you can use ``local_config.py.example`` and edit
 
 ```bash
 HOST =  'mailserver:port'
