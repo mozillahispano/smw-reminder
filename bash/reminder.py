@@ -12,8 +12,8 @@ from local_config import *
 
 json_tasks = urllib2.urlopen('https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategor%C3%ADa:Tarea-5D-5D-5B-5Bestado::!Finalizado-5D-5D/-3FResponsable%3DRespon./-3FArea/-3FProyecto/-3FEstado/-3FFechafin%3DL%C3%ADmite/mainlabel%3D/order%3DASC,ASC/sort%3DFechafin,Estado/format%3Djson/limit%3D1000').read()
 tasks = json.loads(json_tasks)
-json_colab = urllib2.urlopen('https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategoría:Colaborador-5D-5D/-3FCorreo/mainlabel%3D/format%3Djson/limit%3D1000').read()
-colab = json.loads(json_colab)
+json_collab = urllib2.urlopen('https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategoría:Colaborador-5D-5D/-3FCorreo/mainlabel%3D/format%3Djson/limit%3D1000').read()
+collab = json.loads(json_collab)
 
 # jsons structures
 # tareas['items'][0]['respon.']
@@ -22,23 +22,23 @@ colab = json.loads(json_colab)
 
 # transform list in dictionary
 
-n = len(colab["items"])
-colab_new = {}
+n = len(collab["items"])
+collab_new = {}
 
 for var in range(n):
-    ncolab = colab['items'][int(var)]['label']
+    ncollab = collab['items'][int(var)]['label']
     try:
-        mcolab = colab['items'][int(var)]['correo']
+        mcollab = collab['items'][int(var)]['correo']
     except KeyError:
-        mcolab = "no tiene"
-    mcolab = [w.replace('ARROBA','@') for w in mcolab]
-    mcolab = [w.replace('arroba','@') for w in mcolab]
-    mcolab = [w.replace('AT','@') for w in mcolab]
-    mcolab = [w.replace('PUNTO','.') for w in mcolab]
-    mcolab = [w.replace('punto','.') for w in mcolab]
-    mcolab = [w.replace('DOT','.') for w in mcolab]
-    mcolab = [w.replace(' ','') for w in mcolab]
-    colab_new.update({ncolab:mcolab})
+        mcollab = "no tiene"
+    mcollab = [w.replace('ARROBA','@') for w in mcollab]
+    mcollab = [w.replace('arroba','@') for w in mcollab]
+    mcollab = [w.replace('AT','@') for w in mcollab]
+    mcollab = [w.replace('PUNTO','.') for w in mcollab]
+    mcollab = [w.replace('punto','.') for w in mcollab]
+    mcollab = [w.replace('DOT','.') for w in mcollab]
+    mcollab = [w.replace(' ','') for w in mcollab]
+    collab_new.update({ncollab:mcollab})
 
 # append mails with tareas respons (new file)
 n = len(tasks['items'])
@@ -55,7 +55,7 @@ for i in range(n):
             except KeyError:
                 resp1= "no user"
             try:
-                mailresp = colab_new[resp1][0]
+                mailresp = collab_new[resp1][0]
             except KeyError:
                 mailresp="no mail"
             label = tasks['items'][int(i)]['label']
