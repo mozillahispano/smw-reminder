@@ -85,9 +85,9 @@ for i in range(n):
 	    separate tasks according date limit
     	    '''
 	    datelimit = datetime.strptime(limit, '%Y-%m-%d %H:%M:%S')
-	    if (datelimit - datetime.now()) == timedelta (hours = 1):
+	    if timedelta (hours = 1) < (datelimit - datetime.now()) <= timedelta (hours = 24):
 	        tasks_onday.append([resp,mailresp,label,limit])
-	    elif (datelimit -datetime.now()) == timedelta (days = 3):
+	    elif timedelta (days = 1) < (datelimit -datetime.now()) <= timedelta (days = 3):
 	        tasks_threedays.append([resp,mailreps,label,limit])
 	    elif (datetime.now() - datelimit) > timedelta (hours = 1) :
                 tasks_overdue.append([resp,mailresp,label,limit])
