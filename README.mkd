@@ -14,3 +14,19 @@ password = 'password'
 ```bash
 python reminder.py
 ```
+
+## Test
+
+For test this you need up localserver, you can do this with:
+
+```
+python -m smtpd -n -c DebuggingServer localhost:1025
+```
+
+you have to comment this lines too:
+
+```
+# server.starttls()
+# server.login(username,password)
+```
+Now you only have set your config file with ``localhost:1025`` and prove.
