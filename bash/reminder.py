@@ -34,6 +34,9 @@ for var in range(n):
         mcollab = collab['items'][int(var)]['correo']
     except KeyError:
         mcollab = "no tiene"
+    '''
+    for transform mcollab in mail format
+    '''
     mcollab = [w.replace('ARROBA','@') for w in mcollab]
     mcollab = [w.replace('arroba','@') for w in mcollab]
     mcollab = [w.replace('AT','@') for w in mcollab]
