@@ -88,7 +88,7 @@ for i in range(n):
 	    if timedelta (hours = 1) < (datelimit - datetime.now()) <= timedelta (hours = 24):
 	        tasks_onday.append([resp,mailresp,label,limit])
 	    elif timedelta (days = 1) < (datelimit -datetime.now()) <= timedelta (days = 3):
-	        tasks_threedays.append([resp,mailreps,label,limit])
+	        tasks_threedays.append([resp,mailresp,label,limit])
 	    elif (datetime.now() - datelimit) > timedelta (hours = 1) :
                 tasks_overdue.append([resp,mailresp,label,limit])
 	    else:
@@ -111,16 +111,14 @@ def send_mail(txtmessage, txtsubject, tasks_new):
 	lines before, we get a dict (d) with 2 items. Now I parse this items (k,v) in mail message
         '''
         TO = k[1]
-        if (TO == 'no mail'):
-            pass
-        else:
+        try:
             respon = k[0]
             numtasks = len(v)
             text = txtmessage % (respon, numtasks)
             for i in range(numtasks):
 	        b = [w.replace(' ','_') for w in [v[int(i)]]]
                 text = text + '\n' + v[int(i)] + ' https://www.mozilla-hispano.org/documentacion/'+ b[0]
-	    text = text + '\n\nSaludos'
+            text = text + '\n\nSaludos'
             msg = MIMEText(unicode(text).encode('utf-8'))
             msg['Subject'] = txtsubject % numtasks
             server = smtplib.SMTP(HOST)
@@ -128,6 +126,8 @@ def send_mail(txtmessage, txtsubject, tasks_new):
             server.login(username,password)
             server.sendmail(MAIL_FROM, [TO], msg.as_string())
             server.quit()
+        except Exception:
+            pass
 
 def overdue():
     '''
