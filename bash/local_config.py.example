@@ -1,3 +1,4 @@
 HOST =   'mailserver:port'
+MAIL_FROM = 'tareas@mozhispano.com'
 username =  'username'
 password =  'password'

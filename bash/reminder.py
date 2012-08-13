@@ -10,7 +10,6 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from local_config import *
 
-MAIL_FROM = 'tareas@mozhipano.com'
 TASKS_URL = 'https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategor%C3%ADa:Tarea-5D-5D-5B-5Bestado::!Finalizado-5D-5D/-3FResponsable%3DRespon./-3FArea/-3FProyecto/-3FEstado/-3FFechafin%3DL%C3%ADmite/mainlabel%3D/order%3DASC,ASC/sort%3DFechafin,Estado/format%3Djson/limit%3D1000'
 COLLABORATORS_URL = 'https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategoría:Colaborador-5D-5D/-3FCorreo/mainlabel%3D/format%3Djson/limit%3D1000'
 
@@ -121,6 +120,7 @@ def send_mail(txtmessage, txtsubject, tasks_new):
             text = text + '\n\nSaludos'
             msg = MIMEText(unicode(text).encode('utf-8'))
             msg['Subject'] = txtsubject % numtasks
+            msg['From'] = MAIL_FROM
             server = smtplib.SMTP(HOST)
             server.starttls()
             server.login(username,password)

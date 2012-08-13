@@ -6,6 +6,7 @@ Create ``local_config.py``, you can use ``local_config.py.example`` and edit
 
 ```bash
 HOST =  'mailserver:port'
+MAIL_FROM = 'tareas@mozhispano.com'
 username = 'username'
 password = 'password'
 ```
