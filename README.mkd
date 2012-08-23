@@ -1,8 +1,10 @@
 # MozReminder
 
+MozReminder is a script that fetches the list of pending tasks on Mozilla Hispano, as well as their owners, and sends email reminders letting them know when they are overdue or close to being overdue.
+
 ## Config
 
-Create ``local_config.py``, you can use ``local_config.py.example`` and edit
+Create ``local_config.py``. You can use ``local_config.py.example`` and edit it.
 
 ```bash
 HOST =  'mailserver:port'
@@ -18,16 +20,16 @@ python reminder.py
 
 ## Test
 
-For test this you need up localserver, you can do this with:
+To test this you need a local SMTP server. You can do this with:
 
 ```
 python -m smtpd -n -c DebuggingServer localhost:1025
 ```
 
-you have to comment this lines too:
+You also need to comment these lines:
 
 ```
 # server.starttls()
 # server.login(username,password)
 ```
-Now you only have set your config file with ``localhost:1025`` and prove.
+Finally, set the HOST in the config file  to ``localhost:1025`` and test.
