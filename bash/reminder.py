@@ -5,6 +5,7 @@ import urllib2
 import json
 import smtplib
 import string
+import re
 from email.mime.text import MIMEText
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -12,6 +13,23 @@ from local_config import *
 
 TASKS_URL = 'https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategor%C3%ADa:Tarea-5D-5D-5B-5Bestado::!Finalizado-5D-5D/-3FResponsable%3DRespon./-3FArea/-3FProyecto/-3FEstado/-3FFechafin%3DL%C3%ADmite/mainlabel%3D/order%3DASC,ASC/sort%3DFechafin,Estado/format%3Djson/limit%3D1000'
 COLLABORATORS_URL = 'https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategoría:Colaborador-5D-5D/-3FCorreo/mainlabel%3D/format%3Djson/limit%3D1000'
+
+def convertToEmailAddress(emailString):
+    '''
+    Converts the email string into a valid email address. This is necessary
+    because addresses can be obfuscated (name ARROBA server PUNTO com).
+    '''
+    email = emailString.strip()
+    # The spaces around the 'at' are intentional. It avoids picking up names
+    # with 'at' in them. Why algarrobo? Ask StripTM :|
+    pattern = re.compile('\s?(arroba| at |@|algarrobo)\s?', re.IGNORECASE)
+    email = pattern.sub('@', emailString, 1)
+    pattern = re.compile('\s?(punto|dot)\s?', re.IGNORECASE)
+    email = pattern.sub('.', email)
+    # MediaWiki doesn't handle underscores well (issue #17).
+    email = email.replace(' ', '_')
+
+    return email
 
 '''
 we get json from media wiki with this structure:
@@ -30,19 +48,10 @@ for var in range(n):
     '''
     ncollab = collab['items'][int(var)]['label']
     try:
-        mcollab = collab['items'][int(var)]['correo']
+        mcollab = convertToEmailAddress(collab['items'][int(var)]['correo'][0])
     except KeyError:
-        mcollab = "no tiene"
-    '''
-    for transform mcollab in mail format
-    '''
-    mcollab = [w.replace('ARROBA','@') for w in mcollab]
-    mcollab = [w.replace('arroba','@') for w in mcollab]
-    mcollab = [w.replace('AT','@') for w in mcollab]
-    mcollab = [w.replace('PUNTO','.') for w in mcollab]
-    mcollab = [w.replace('punto','.') for w in mcollab]
-    mcollab = [w.replace('DOT','.') for w in mcollab]
-    mcollab = [w.replace(' ','') for w in mcollab]
+        mcollab = ''
+
     collab_new.update({ncollab:mcollab})
 
 '''
@@ -75,9 +84,9 @@ for i in range(n):
             except KeyError:
                 resp1= "no user"
             try:
-                mailresp = collab_new[resp1][0]
+                mailresp = collab_new[resp1]
             except KeyError:
-                mailresp="no mail"
+                mailresp=''
             label = tasks['items'][int(i)]['label']
 	    limit = tasks['items'][int(i)][u'límite'][0]
     	    '''
@@ -109,24 +118,29 @@ def send_mail(txtmessage, txtsubject, tasks_new):
         '''
 	lines before, we get a dict (d) with 2 items. Now I parse this items (k,v) in mail message
         '''
-        TO = k[1]
-        try:
-            respon = k[0]
-            numtasks = len(v)
-            text = txtmessage % (respon, numtasks)
-            for i in range(numtasks):
-	        b = [w.replace(' ','_') for w in [v[int(i)]]]
-                text = text + '\n' + v[int(i)] + ' https://www.mozilla-hispano.org/documentacion/'+ b[0]
-            text = text + '\n\nSaludos'
-            msg = MIMEText(unicode(text).encode('utf-8'))
-            msg['Subject'] = txtsubject % numtasks
-            msg['From'] = MAIL_FROM
-            server = smtplib.SMTP(HOST)
-            server.starttls()
-            server.login(username,password)
-            server.sendmail(MAIL_FROM, [TO], msg.as_string())
-            server.quit()
-        except Exception:
+        toAddress = k[1]
+
+        if (toAddress != ''):
+            try:
+                respon = k[0]
+                numtasks = len(v)
+                text = txtmessage % (respon, numtasks)
+                for i in range(numtasks):
+                    b = [w.replace(' ','_') for w in [v[int(i)]]]
+                    text = text + '\n' + v[int(i)] + ' https://www.mozilla-hispano.org/documentacion/'+ b[0]
+                text = text + '\n\nSaludos'
+                msg = MIMEText(unicode(text).encode('utf-8'))
+                msg['Subject'] = txtsubject % numtasks
+                msg['From'] = MAIL_FROM
+                server = smtplib.SMTP(HOST)
+                server.starttls()
+                server.login(username,password)
+                server.sendmail(MAIL_FROM, toAddress, msg.as_string())
+                server.quit()
+            except Exception:
+                pass
+        else:
+            # TODO: show a 'no email address for user X' error.
             pass
 
 def overdue():
@@ -155,7 +169,7 @@ def onday():
     txtmessage = u"Hola %s, \n\nActualmente tienes %s tarea(s) asignada(s) a ti que caducan hoy. Por favor revisa su estado y actualizalas acordemente \n"
     txtsubject = '[Mozilla Hispano] Tienes %s tareas que caducan hoy'
     send_mail(txtmessage, txtsubject, tasks_new)
-    
+
 overdue()
 threedays()
 onday()
