@@ -7,6 +7,7 @@ import json
 import smtplib
 import string
 import re
+import argparse
 from email.mime.text import MIMEText
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -144,13 +145,13 @@ for task in tasks['items']:
 
             if dueToday:
                 tasks_onday.append([assignee, email, task['label'], limit])
-                print 'Due today: "' + task['label'] + '". Message sent to ' + assignee + '.'
+                #print 'Due today: "' + task['label'] + '". Message sent to ' + assignee + '.'
             elif dueInThreeDays:
                 tasks_threedays.append([assignee, email, task['label'], limit])
-                print 'Due in 3 days: "' + task['label'] + '". Message sent to ' + assignee + '.'
+                #print 'Due in 3 days: "' + task['label'] + '". Message sent to ' + assignee + '.'
             elif overdue:
                 tasks_overdue.append([assignee, email, task['label'], limit])
-                print 'Overdue: "' + task['label'] + '". Message sent to ' + assignee + '.'
+                #print 'Overdue: "' + task['label'] + '". Message sent to ' + assignee + '.'
 
 # meetings reminder
 def meetingmail(txtmessage, txtsubject, json):
@@ -183,6 +184,7 @@ def meetings():
                 if (fecha -datetime.now()) <= timedelta(hours=3):
                     meeting_today = []
                     meeting_today.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
+                    meeting_today = meeting_today[0]
                     txtmessage = u"Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, a las %s."
                     txtsubject = '[MozillaHispano]Reunión de %s en unas horas'
                     meetingmail(txtmessage,txtsubject,meeting_today)
@@ -262,7 +264,18 @@ def taskonday():
     txtsubject = '[Mozilla Hispano] Tienes %s tareas que caducan hoy'
     send_mail(txtmessage, txtsubject, tasks_new)
 
-taskoverdue()
-taskthreedays()
-taskonday()
-meetings()
+def tasks(parsed_args):
+    taskoverdue()
+    taskthreedays()
+    taskonday()
+
+def meeting_reminder(parsed_args):
+    meetings()
+
+parser=argparse.ArgumentParser()
+parser.add_argument('--tasks', dest='action', action='store_const', const=tasks)
+parser.add_argument('--meetings', dest='action', action='store_const', const=meeting_reminder)
+parsed_args = parser.parse_args()
+if parsed_args.action is None:
+    parser.parse_args(['-h'])
+parsed_args.action(parsed_args)
