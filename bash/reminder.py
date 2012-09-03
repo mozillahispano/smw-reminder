@@ -176,11 +176,11 @@ def send_mail(txtmessage, txtsubject, tasks_new):
                     b = [w.replace(' ','_') for w in [v[int(i)]]]
                     text = text + '\n' + v[int(i)] + ' https://www.mozilla-hispano.org/documentacion/'+ b[0]
                 text = text + '\n\nSaludos'
-                msg = MIMEText(text, 'plain', 'ISO-8859-1')
+                msg = MIMEText(unicode(text).encode('utf-8'))
                 msg['Subject'] = txtsubject % numtasks
                 msg['From'] = MAIL_FROM
                 msg['To'] = toAddress
-
+                msg.set_charset('utf-8')
                 server = smtplib.SMTP(HOST)
                 server.starttls()
                 server.login(username,password)
