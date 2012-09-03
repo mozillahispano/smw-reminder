@@ -1,6 +1,7 @@
 #!/env/bin/python
 # -*- coding: utf-8 -*-
 
+import urllib
 import urllib2
 import json
 import smtplib
@@ -13,6 +14,10 @@ from local_config import *
 
 TASKS_URL = 'https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategor%C3%ADa:Tarea-5D-5D-5B-5Bestado::!Finalizado-5D-5D/-3FResponsable%3DRespon./-3FArea/-3FProyecto/-3FEstado/-3FFechafin%3DL%C3%ADmite/mainlabel%3D/order%3DASC,ASC/sort%3DFechafin,Estado/format%3Djson/limit%3D1000'
 COLLABORATORS_URL = 'https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategoría:Colaborador-5D-5D/-3FCorreo/mainlabel%3D/format%3Djson/limit%3D1000'
+AREA_OWNER_URL = 'https://www.mozilla-hispano.org/documentacion/index.php?title=Especial%3AAsk&po=%3FResponsable%0D%0A&p[format]=json&q='
+
+# Dictionary that maps areas to an array of owner email addresses.
+areaOwners = {}
 
 def convertToEmailAddress(emailString):
     '''
@@ -30,6 +35,34 @@ def convertToEmailAddress(emailString):
     email = email.replace(' ', '_')
 
     return email
+
+def getAreaOwners(area):
+    '''
+    Gets the user information of the owners of the given focus area.
+    '''
+    owners = []
+
+    if len(area) != 0:
+        quotedArea = urllib.quote_plus(area.encode('utf-8'))
+
+        if quotedArea not in areaOwners:
+            ownerURL = AREA_OWNER_URL + '[[' + quotedArea + ']]'
+            ownerJSON = urllib2.urlopen(ownerURL).read()
+            ownerObj = json.loads(ownerJSON)
+
+            for ownerList in ownerObj['items']:
+                for owner in ownerList['responsable']:
+                    userString = 'Usuario:' + owner
+
+                    if userString in collab_new:
+                        owners.append(owner)
+                # Save locally for future use.
+                areaOwners[quotedArea] = owners
+        else:
+            # Use saved copy instead of fetching it again.
+            owners = areaOwners[quotedArea]
+
+    return owners
 
 '''
 we get json from media wiki with this structure:
@@ -64,45 +97,59 @@ this is to append collaborator mail with this data and separate tasks according 
 '''
 json_tasks = urllib2.urlopen(TASKS_URL).read()
 tasks = json.loads(json_tasks)
-n = len(tasks['items'])
 tasks_onday = []
 tasks_threedays = []
 tasks_overdue =[]
-for i in range(n):
-    '''
-    for each task
-    '''
-    try:
-        l = len(tasks['items'][int(i)]['respon.'])
-        for s in range(l):
-   	    '''
-	    and for each responsible in each task
-   	    '''
-            resp = tasks['items'][int(i)]['respon.'][s]
-            try:
-                resp1 = 'Usuario:'+resp
-            except KeyError:
-                resp1= "no user"
-            try:
-                mailresp = collab_new[resp1]
-            except KeyError:
-                mailresp=''
-            label = tasks['items'][int(i)]['label']
-	    limit = tasks['items'][int(i)][u'límite'][0]
-    	    '''
-	    separate tasks according date limit
-    	    '''
-	    datelimit = datetime.strptime(limit, '%Y-%m-%d %H:%M:%S')
-	    if timedelta (hours = 1) < (datelimit - datetime.now()) <= timedelta (hours = 24):
-	        tasks_onday.append([resp,mailresp,label,limit])
-	    elif timedelta (days = 1) < (datelimit -datetime.now()) <= timedelta (days = 3):
-	        tasks_threedays.append([resp,mailresp,label,limit])
-	    elif (datetime.now() - datelimit) > timedelta (hours = 1) :
-                tasks_overdue.append([resp,mailresp,label,limit])
-	    else:
-	        pass
-    except KeyError:
-        pass
+
+for task in tasks['items']:
+    dueToday = False
+    dueInThreeDays = False
+    overdue = False
+
+    # Get the date limit and figure out if we need to do anything.
+    if u'límite' in task:
+        limit = task[u'límite'][0]
+        datelimit = datetime.strptime(limit, '%Y-%m-%d %H:%M:%S')
+
+        if timedelta(hours = 1) < (datelimit - datetime.now()) <= timedelta(hours = 24):
+            dueToday = True
+        elif timedelta(days = 1) < (datelimit -datetime.now()) <= timedelta(days = 3):
+            dueInThreeDays = True
+        elif (datetime.now() - datelimit) > timedelta (hours = 1) :
+            overdue = True
+
+    # Figure out who to send the message to.
+    if (dueToday or dueInThreeDays or overdue):
+        assignees = []
+
+        # Get assignees from task.
+        if 'respon.' in task:
+            for user in task['respon.']:
+                userString = 'Usuario:' + user
+
+                if userString in collab_new:
+                    assignees.append(user)
+
+        # If there are none, get area owners.
+        if len(assignees) == 0:
+            if 'area' in task:
+                assignees = getAreaOwners(task['area'][0])
+
+            if len(assignees) == 0:
+                print 'Due task "' + task['label'] + '" has no one responsible for it.'
+
+        for assignee in assignees:
+            email = collab_new['Usuario:' + assignee]
+
+            if dueToday:
+                tasks_onday.append([assignee, email, task['label'], limit])
+                print 'Due today: "' + task['label'] + '". Message sent to ' + assignee + '.'
+            elif dueInThreeDays:
+                tasks_threedays.append([assignee, email, task['label'], limit])
+                print 'Due in 3 days: "' + task['label'] + '". Message sent to ' + assignee + '.'
+            elif overdue:
+                tasks_overdue.append([assignee, email, task['label'], limit])
+                print 'Overdue: "' + task['label'] + '". Message sent to ' + assignee + '.'
 
 def send_mail(txtmessage, txtsubject, tasks_new):
     '''
@@ -129,9 +176,11 @@ def send_mail(txtmessage, txtsubject, tasks_new):
                     b = [w.replace(' ','_') for w in [v[int(i)]]]
                     text = text + '\n' + v[int(i)] + ' https://www.mozilla-hispano.org/documentacion/'+ b[0]
                 text = text + '\n\nSaludos'
-                msg = MIMEText(unicode(text).encode('utf-8'))
+                msg = MIMEText(text, 'plain', 'ISO-8859-1')
                 msg['Subject'] = txtsubject % numtasks
                 msg['From'] = MAIL_FROM
+                msg['To'] = toAddress
+
                 server = smtplib.SMTP(HOST)
                 server.starttls()
                 server.login(username,password)
