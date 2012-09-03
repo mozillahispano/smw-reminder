@@ -15,8 +15,11 @@ password = 'password'
 
 ## Use
 ```bash
-python reminder.py
+python reminder.py --<option>
 ```
+###options:
+``--tasks`` for tasks
+``--meetings`` for meetings
 
 ## Test
 
