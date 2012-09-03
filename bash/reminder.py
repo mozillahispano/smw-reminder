@@ -15,6 +15,7 @@ from local_config import *
 TASKS_URL = 'https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategor%C3%ADa:Tarea-5D-5D-5B-5Bestado::!Finalizado-5D-5D/-3FResponsable%3DRespon./-3FArea/-3FProyecto/-3FEstado/-3FFechafin%3DL%C3%ADmite/mainlabel%3D/order%3DASC,ASC/sort%3DFechafin,Estado/format%3Djson/limit%3D1000'
 COLLABORATORS_URL = 'https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategoría:Colaborador-5D-5D/-3FCorreo/mainlabel%3D/format%3Djson/limit%3D1000'
 AREA_OWNER_URL = 'https://www.mozilla-hispano.org/documentacion/index.php?title=Especial%3AAsk&po=%3FResponsable%0D%0A&p[format]=json&q='
+MEETINGS_URL = 'https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategor%C3%ADa:Reuniones-5D-5D/-3FFechainicio/-3FArea/-3FAsistentes/-3FProyecto/mainlabel%3D/order%3DDESC,DESC/sort%3DFechainicio/format%3Djson/limit%3D100'
 
 # Dictionary that maps areas to an array of owner email addresses.
 areaOwners = {}
@@ -151,6 +152,48 @@ for task in tasks['items']:
                 tasks_overdue.append([assignee, email, task['label'], limit])
                 print 'Overdue: "' + task['label'] + '". Message sent to ' + assignee + '.'
 
+# meetings reminder
+def meetingmail(txtmessage, txtsubject, json):
+    try:
+        address = json[1]
+        text = txtmessage % (json[0],json[2],json[3])
+        msg = MIMEText(unicode(text).encode('utf-8'))
+        msg['Subject'] = txtsubject % unicode(json[3]).encode('utf-8')
+        msg['From'] = MAIL_FROM
+        msg['To'] = address
+        msg.set_charset('utf-8')
+        server = smtplib.SMTP(HOST)
+        server.starttls()
+        server.login(username,password)
+        server.sendmail(MAIL_FROM, address, msg.as_string())
+        server.quit
+    except Exception:
+        pass
+
+
+def meetings():
+    json_meeting = urllib2.urlopen(MEETINGS_URL).read()
+    meetings = json.loads(json_meeting)
+    for meeting in meetings['items']:
+        fecha = meeting['fechainicio'][0]
+        fecha = datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S')
+        if timedelta(days = 1) < (fecha - datetime.now()) <= timedelta(days=3):
+            for user in meeting['asistentes']:
+                email = collab_new['Usuario:' + user]
+                if (fecha -datetime.now()) <= timedelta(hours=3):
+                    meeting_today = []
+                    meeting_today.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
+                    txtmessage = u"Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, a las %s."
+                    txtsubject = '[MozillaHispano]Reunión de %s en unas horas'
+                    meetingmail(txtmessage,txtsubject,meeting_today)
+                else:
+                    meeting_three_days = []
+                    meeting_three_days.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
+                    meeting_three_days = meeting_three_days[0]
+                    txtmessage = u"Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, a las %s."
+                    txtsubject = '[MozillaHispano]Reunión de %s en unos días'
+                    meetingmail(txtmessage,txtsubject,meeting_three_days)
+
 def send_mail(txtmessage, txtsubject, tasks_new):
     '''
     send mails for each collaborator
@@ -192,7 +235,7 @@ def send_mail(txtmessage, txtsubject, tasks_new):
             # TODO: show a 'no email address for user X' error.
             pass
 
-def overdue():
+def taskoverdue():
     '''
     text for message and subject for overdue tasks
     '''
@@ -201,7 +244,7 @@ def overdue():
     txtsubject = '[Mozilla Hispano] Tienes %s tareas caducadas'
     send_mail(txtmessage, txtsubject, tasks_new)
 
-def threedays():
+def taskthreedays():
     '''
     text for message and subject for tasks that mature in three days
     '''
@@ -210,7 +253,7 @@ def threedays():
     txtsubject = '[Mozilla Hispano] Tienes %s tareas a punto de caducar'
     send_mail(txtmessage, txtsubject,tasks_new)
 
-def onday():
+def taskonday():
     '''
     text for message and subject for tasks that mature today
     '''
@@ -219,6 +262,7 @@ def onday():
     txtsubject = '[Mozilla Hispano] Tienes %s tareas que caducan hoy'
     send_mail(txtmessage, txtsubject, tasks_new)
 
-overdue()
-threedays()
-onday()
+taskoverdue()
+taskthreedays()
+taskonday()
+meetings()
