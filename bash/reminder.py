@@ -38,7 +38,7 @@ def convertToEmailAddress(emailString):
 
     return email
 
-def getAreaOwners(area):
+def getAreaOwners(area, collab_new):
     '''
     Gets the user information of the owners of the given focus area.
     '''
@@ -66,92 +66,88 @@ def getAreaOwners(area):
 
     return owners
 
-'''
-we get json from media wiki with this structure:
-    colab['items'][n]['label']
-    colab['items'][n]['correo']
-but this is not usable and mails isn't in mail format, this is for solve that.
-'''
-json_collab = urllib2.urlopen(COLLABORATORS_URL).read()
-collab = json.loads(json_collab)
-n = len(collab["items"])
-collab_new = {}
 
-for var in range(n):
+def collaborators(collab_new):
     '''
-    for each collaborator we get a dictionary with collaborators name (ncollab) and collaborators mail (mcollab)
+    we get json from media wiki with this structure:
+        colab['items'][n]['label']
+        colab['items'][n]['correo']
+    but this is not usable and mails isn't in mail format, this is for solve that.
     '''
-    ncollab = collab['items'][int(var)]['label']
-    try:
-        mcollab = convertToEmailAddress(collab['items'][int(var)]['correo'][0])
-    except KeyError:
-        mcollab = ''
+    json_collab = urllib2.urlopen(COLLABORATORS_URL).read()
+    collab = json.loads(json_collab)
+    n = len(collab["items"])
 
-    collab_new.update({ncollab:mcollab})
+    for var in range(n):
+        '''
+        for each collaborator we get a dictionary with collaborators name (ncollab) and collaborators mail (mcollab)
+        '''
+        ncollab = collab['items'][int(var)]['label']
+        try:
+            mcollab = convertToEmailAddress(collab['items'][int(var)]['correo'][0])
+        except KeyError:
+            mcollab = ''
 
-'''
-Like json collab, tasks json structure is:
-    tasks['items'][n]['respon.']
-    tasks['items'][n]['label']
-    tasks['items'][n][u'límite']
-this is to append collaborator mail with this data and separate tasks according to date limit: if is overdue (tasks_overdue),
- that mature in three days (tasks_threedays) and that mature today (tasks_onday)
-'''
-json_tasks = urllib2.urlopen(TASKS_URL).read()
-tasks = json.loads(json_tasks)
-tasks_onday = []
-tasks_threedays = []
-tasks_overdue =[]
+        collab_new.update({ncollab:mcollab})
+    return collab_new
 
-for task in tasks['items']:
-    dueToday = False
-    dueInThreeDays = False
-    overdue = False
+def getTasks():
+    '''
+    Like json collab, tasks json structure is:
+        tasks['items'][n]['respon.']
+        tasks['items'][n]['label']
+        tasks['items'][n][u'límite']
+    this is to append collaborator mail with this data and separate tasks according to date limit: if is overdue (tasks_overdue),
+    that mature in three days (tasks_threedays) and that mature today (tasks_onday)
+    '''
+    json_tasks = urllib2.urlopen(TASKS_URL).read()
+    tasks = json.loads(json_tasks)
+    tasks_onday = []
+    tasks_threedays = []
+    tasks_overdue =[]
+    collab_new = {}
+    collaborators(collab_new)
 
-    # Get the date limit and figure out if we need to do anything.
-    if u'límite' in task:
-        limit = task[u'límite'][0]
-        datelimit = datetime.strptime(limit, '%Y-%m-%d %H:%M:%S')
-
-        if timedelta(hours = 1) < (datelimit - datetime.now()) <= timedelta(hours = 24):
-            dueToday = True
-        elif timedelta(days = 1) < (datelimit -datetime.now()) <= timedelta(days = 3):
-            dueInThreeDays = True
-        elif (datetime.now() - datelimit) > timedelta (hours = 1) :
-            overdue = True
-
-    # Figure out who to send the message to.
-    if (dueToday or dueInThreeDays or overdue):
-        assignees = []
-
-        # Get assignees from task.
-        if 'respon.' in task:
-            for user in task['respon.']:
-                userString = 'Usuario:' + user
-
-                if userString in collab_new:
-                    assignees.append(user)
-
-        # If there are none, get area owners.
-        if len(assignees) == 0:
-            if 'area' in task:
-                assignees = getAreaOwners(task['area'][0])
-
+    for task in tasks['items']:
+        dueToday = False
+        dueInThreeDays = False
+        overdue = False
+        # Get the date limit and figure out if we need to do anything.
+        if u'límite' in task:
+            limit = task[u'límite'][0]
+            datelimit = datetime.strptime(limit, '%Y-%m-%d %H:%M:%S')
+            if timedelta(hours = 1) < (datelimit - datetime.now()) <= timedelta(hours = 24):
+                dueToday = True
+            elif timedelta(days = 1) < (datelimit -datetime.now()) <= timedelta(days = 3):
+                dueInThreeDays = True
+            elif (datetime.now() - datelimit) > timedelta (hours = 1) :
+                overdue = True
+        # Figure out who to send the message to.
+        if (dueToday or dueInThreeDays or overdue):
+            assignees = []
+            # Get assignees from task.
+            if 'respon.' in task:
+                for user in task['respon.']:
+                    userString = 'Usuario:' + user
+                    if userString in collab_new:
+                        assignees.append(user)
+            # If there are none, get area owners.
             if len(assignees) == 0:
-                print 'Due task "' + task['label'] + '" has no one responsible for it.'
-
-        for assignee in assignees:
-            email = collab_new['Usuario:' + assignee]
-
-            if dueToday:
-                tasks_onday.append([assignee, email, task['label'], limit])
-                #print 'Due today: "' + task['label'] + '". Message sent to ' + assignee + '.'
-            elif dueInThreeDays:
-                tasks_threedays.append([assignee, email, task['label'], limit])
-                #print 'Due in 3 days: "' + task['label'] + '". Message sent to ' + assignee + '.'
-            elif overdue:
-                tasks_overdue.append([assignee, email, task['label'], limit])
-                #print 'Overdue: "' + task['label'] + '". Message sent to ' + assignee + '.'
+                if 'area' in task:
+                    assignees = getAreaOwners(task['area'][0],collab_new)
+                if len(assignees) == 0:
+                    print 'Due task "' + task['label'] + '" has no one responsible for it.'
+            for assignee in assignees:
+                email = collab_new['Usuario:' + assignee]
+                if dueToday:
+                    tasks_onday.append([assignee, email, task['label'], limit])
+                elif dueInThreeDays:
+                    tasks_threedays.append([assignee, email, task['label'], limit])
+                elif overdue:
+                    tasks_overdue.append([assignee, email, task['label'], limit])
+    taskoverdue(tasks_overdue)
+    taskthreedays(tasks_threedays)
+    taskonday(tasks_onday)
 
 # meetings reminder
 def meetingmail(txtmessage, txtsubject, json):
@@ -173,6 +169,8 @@ def meetingmail(txtmessage, txtsubject, json):
 
 
 def meetings():
+    collab_new = {}
+    collaborators(collab_new)
     json_meeting = urllib2.urlopen(MEETINGS_URL).read()
     meetings = json.loads(json_meeting)
     for meeting in meetings['items']:
@@ -219,7 +217,7 @@ def send_mail(txtmessage, txtsubject, tasks_new):
                 text = txtmessage % (respon, numtasks)
                 for i in range(numtasks):
                     b = [w.replace(' ','_') for w in [v[int(i)]]]
-                    text = text + '\n' + v[int(i)] + ' https://www.mozilla-hispano.org/documentacion/'+ b[0]
+                    text = text + '\n' + v[int(i)] + 'https://www.mozilla-hispano.org/documentacion/'+ b[0]
                 text = text + '\n\nSaludos'
                 msg = MIMEText(unicode(text).encode('utf-8'))
                 msg['Subject'] = txtsubject % numtasks
@@ -237,7 +235,7 @@ def send_mail(txtmessage, txtsubject, tasks_new):
             # TODO: show a 'no email address for user X' error.
             pass
 
-def taskoverdue():
+def taskoverdue(tasks_overdue):
     '''
     text for message and subject for overdue tasks
     '''
@@ -246,7 +244,7 @@ def taskoverdue():
     txtsubject = '[Mozilla Hispano] Tienes %s tareas caducadas'
     send_mail(txtmessage, txtsubject, tasks_new)
 
-def taskthreedays():
+def taskthreedays(tasks_threedays):
     '''
     text for message and subject for tasks that mature in three days
     '''
@@ -255,7 +253,7 @@ def taskthreedays():
     txtsubject = '[Mozilla Hispano] Tienes %s tareas a punto de caducar'
     send_mail(txtmessage, txtsubject,tasks_new)
 
-def taskonday():
+def taskonday(tasks_onday):
     '''
     text for message and subject for tasks that mature today
     '''
@@ -265,9 +263,7 @@ def taskonday():
     send_mail(txtmessage, txtsubject, tasks_new)
 
 def tasks(parsed_args):
-    taskoverdue()
-    taskthreedays()
-    taskonday()
+    getTasks()
 
 def meeting_reminder(parsed_args):
     meetings()
