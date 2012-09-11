@@ -168,7 +168,7 @@ def meetingmail(txtmessage, txtsubject, json):
         pass
 
 
-def meetings():
+def meetingsthreedays():
     collab_new = {}
     collaborators(collab_new)
     json_meeting = urllib2.urlopen(MEETINGS_URL).read()
@@ -179,20 +179,30 @@ def meetings():
         if timedelta(days = 1) < (fecha - datetime.now()) <= timedelta(days=3):
             for user in meeting['asistentes']:
                 email = collab_new['Usuario:' + user]
-                if (fecha -datetime.now()) <= timedelta(hours=3):
-                    meeting_today = []
-                    meeting_today.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
-                    meeting_today = meeting_today[0]
-                    txtmessage = u"Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, a las %s."
-                    txtsubject = '[MozillaHispano]Reunión de %s en unas horas'
-                    meetingmail(txtmessage,txtsubject,meeting_today)
-                else:
-                    meeting_three_days = []
-                    meeting_three_days.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
-                    meeting_three_days = meeting_three_days[0]
-                    txtmessage = u"Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, a las %s."
-                    txtsubject = '[MozillaHispano]Reunión de %s en unos días'
-                    meetingmail(txtmessage,txtsubject,meeting_three_days)
+                meeting_three_days = []
+                meeting_three_days.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
+                meeting_three_days = meeting_three_days[0]
+                txtmessage = u"Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, a las %s."
+                txtsubject = '[MozillaHispano]Reunión de %s en unos días'
+                meetingmail(txtmessage,txtsubject,meeting_three_days)
+
+def meetingstoday():
+    collab_new = {}
+    collaborators(collab_new)
+    json_meeting = urllib2.urlopen(MEETINGS_URL).read()
+    meetings = json.loads(json_meeting)
+    for meeting in meetings['items']:
+        fecha = meeting['fechainicio'][0]
+        fecha = datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S')
+        if timedelta(hours = 0) (fecha - datetime.now()) <= timedelta(hours=3):
+            for user in meeting['asistentes']:
+                email = collab_new['Usuario:' + user]
+                meeting_today = []
+                meeting_today.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
+                meeting_today = meeting_today[0]
+                txtmessage = u"Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, a las %s."
+                txtsubject = '[MozillaHispano]Reunión de %s en unas horas'
+                meetingmail(txtmessage,txtsubject,meeting_today)
 
 def send_mail(txtmessage, txtsubject, tasks_new):
     '''
@@ -265,12 +275,16 @@ def taskonday(tasks_onday):
 def tasks(parsed_args):
     getTasks()
 
-def meeting_reminder(parsed_args):
-    meetings()
+def meeting_threedays(parsed_args):
+    meetingsthreedays()
+
+def meeting_today(parsed_args):
+    meetingstoday()
 
 parser=argparse.ArgumentParser()
 parser.add_argument('--tasks', dest='action', action='store_const', const=tasks)
-parser.add_argument('--meetings', dest='action', action='store_const', const=meeting_reminder)
+parser.add_argument('--meetings-threedays', dest='action', action='store_const', const=meeting_threedays)
+parser.add_argument('--meetings-today', dest='action', action='store_const', const=meeting_today)
 parsed_args = parser.parse_args()
 if parsed_args.action is None:
     parser.parse_args(['-h'])
