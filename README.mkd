@@ -19,7 +19,7 @@ python reminder.py --<option>
 ```
 ###options:
 ``--tasks`` for tasks
-``--meetings`` for meetings
+``--meetings-threedays`` and ``--meetings-today``for meetings
 
 ## Test
 
