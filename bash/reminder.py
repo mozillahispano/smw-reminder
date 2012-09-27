@@ -230,7 +230,7 @@ class Meetings(object):
             address = json[1]
             text = txtmessage % (json[0],json[2],json[3])
             msg = MIMEText(unicode(text).encode('utf-8'))
-            msg['Subject'] = txtsubject % unicode(json[3]).encode('utf-8')
+            msg['Subject'] = txtsubject % unicode(json[2]).encode('utf-8')
             msg['From'] = MAIL_FROM
             msg['To'] = address
             msg.set_charset('utf-8')
@@ -250,9 +250,13 @@ class Meetings(object):
                 for user in meeting['asistentes']:
                     email = self.collab_new['Usuario:' + user]
                     meeting_three_days = []
-                    meeting_three_days.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
+                    try:
+                        meeting_three_days.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
+                    except KeyError:
+                        meeting_three_days.append([user, email, meeting['label'],meeting['fechainicio'][0]])
                     meeting_three_days = meeting_three_days[0]
-                    txtmessage = u"Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, a las %s."
+                    txtmessage = u"""Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, a las %s.
+                                  \n Puedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/""" + meeting['label']
                     txtsubject = '[MozillaHispano]Reunión de %s en unos días'
                     Meetings().meetingmail(txtmessage,txtsubject,meeting_three_days)
 
@@ -264,9 +268,13 @@ class Meetings(object):
                 for user in self.meeting['asistentes']:
                     email = collab_new['Usuario:' + user]
                     meeting_today = []
-                    meeting_today.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
+                    try:
+                        meeting_today.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
+                    except KeyError:
+                        meeting_today.append([user, email, meeting['label'],meeting['fechainicio'][0]])
                     meeting_today = meeting_today[0]
-                    txtmessage = u"Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, a las %s."
+                    txtmessage = u"""Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, a las %s. 
+                                  \n Puedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/""" + meeting['label']
                     txtsubject = '[MozillaHispano]Reunión de %s en unas horas'
                     Meetings().meetingmail(txtmessage,txtsubject,meeting_today)
 
