@@ -13,6 +13,8 @@ username = 'username'
 password = 'password'
 ```
 
+*Note*: if your python version is earlier than to 2.7, you have to install python-argparse
+
 ## Use
 ```bash
 python reminder.py --<option>
