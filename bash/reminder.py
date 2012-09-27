@@ -256,7 +256,7 @@ class Meetings(object):
                     txtsubject = '[MozillaHispano]Reunión de %s en unos días'
                     Meetings().meetingmail(txtmessage,txtsubject,meeting_three_days)
 
-    def meetingstoday():
+    def meetingstoday(self):
         for meeting in self.meetings['items']:
             fecha = meeting['fechainicio'][0]
             fecha = datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S')
