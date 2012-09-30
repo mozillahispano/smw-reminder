@@ -265,8 +265,8 @@ class Meetings(object):
             fecha = meeting['fechainicio'][0]
             fecha = datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S')
             if timedelta(hours = 2) < (fecha - datetime.now()) <= timedelta(hours=3):
-                for user in self.meeting['asistentes']:
-                    email = collab_new['Usuario:' + user]
+                for user in meeting['asistentes']:
+                    email = self.collab_new['Usuario:' + user]
                     meeting_today = []
                     try:
                         meeting_today.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
