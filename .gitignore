@@ -2,3 +2,4 @@
 env
 *.json
 bash/local_config.py
+*.swp
