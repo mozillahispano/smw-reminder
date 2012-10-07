@@ -172,7 +172,7 @@ def send_mail(txtmessage, txtsubject, tasks_new):
                 text = txtmessage % (respon, numtasks)
                 for i in range(numtasks):
                     b = [w.replace(' ','_') for w in [v[int(i)]]]
-                    text = text + '\n' + v[int(i)] + 'https://www.mozilla-hispano.org/documentacion/'+ b[0]
+                    text = text + '\n' + v[int(i)] + ' https://www.mozilla-hispano.org/documentacion/'+ b[0]
                 text = text + '\n\nSaludos'
                 msg = MIMEText(unicode(text).encode('utf-8'))
                 msg['Subject'] = txtsubject % numtasks
