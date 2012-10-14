@@ -246,6 +246,7 @@ class Meetings(object):
         for meeting in self.meetings['items']:
             fecha = meeting['fechainicio'][0]
             fecha = datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S')
+            fecha = fecha + timedelta(hours=localtime)
             if timedelta(days = 2) < (fecha - datetime.now()) <= timedelta(days=3):
                 for user in meeting['asistentes']:
                     email = self.collab_new['Usuario:' + user]
@@ -265,6 +266,7 @@ class Meetings(object):
         for meeting in self.meetings['items']:
             fecha = meeting['fechainicio'][0]
             fecha = datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S')
+            fecha = fecha + timedelta(hours=localtime)
             if timedelta(hours = 2) < (fecha - datetime.now()) <= timedelta(hours=3):
                 for user in meeting['asistentes']:
                     email = self.collab_new['Usuario:' + user]

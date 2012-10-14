@@ -2,3 +2,4 @@ HOST =   'mailserver:port'
 MAIL_FROM = 'tareas@mozhispano.com'
 username =  'username'
 password =  'password'
+localtime = -5 # Diference between your local time and UTC time
