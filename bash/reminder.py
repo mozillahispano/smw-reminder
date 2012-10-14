@@ -230,7 +230,7 @@ class Meetings(object):
             address = json[1]
             text = txtmessage % (json[0],json[2],json[3])
             msg = MIMEText(unicode(text).encode('utf-8'))
-            msg['Subject'] = txtsubject % unicode(json[2]).encode('utf-8')
+            msg['Subject'] = txtsubject % unicode(json[4]).encode('utf-8')
             msg['From'] = MAIL_FROM
             msg['To'] = address
             msg.set_charset('utf-8')
@@ -251,12 +251,12 @@ class Meetings(object):
                     email = self.collab_new['Usuario:' + user]
                     meeting_three_days = []
                     try:
-                        meeting_three_days.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
+                        meeting_three_days.append([user, email, meeting['proyecto'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0]])
                     except KeyError:
-                        meeting_three_days.append([user, email, meeting['area'][0],meeting['fechainicio'][0]])
+                        meeting_three_days.append([user, email, meeting['area'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0]])
                     meeting_three_days = meeting_three_days[0]
-                    txtmessage = u"""Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, a las %s.
-                                  \n Puedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/""" + meeting['area'][0]
+                    txtmessage = u"""Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, el próximo %s.
+                                  \n Puedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/""" + meeting['label']
                     txtsubject = '[MozillaHispano]Reunión de %s en unos días'
                     Meetings().meetingmail(txtmessage,txtsubject,meeting_three_days)
 
@@ -269,12 +269,12 @@ class Meetings(object):
                     email = self.collab_new['Usuario:' + user]
                     meeting_today = []
                     try:
-                        meeting_today.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
+                        meeting_today.append([user, email, meeting['proyecto'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0]])
                     except KeyError:
-                        meeting_today.append([user, email, meeting['area'][0],meeting['fechainicio'][0]])
+                        meeting_today.append([user, email, meeting['area'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0]])
                     meeting_today = meeting_today[0]
-                    txtmessage = u"""Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, a las %s. 
-                                  \n Puedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/""" + meeting['area'][0]
+                    txtmessage = u"""Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, hoy %s. 
+                                  \n Puedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/""" + meeting['label']
                     txtsubject = '[MozillaHispano]Reunión de %s en unas horas'
                     Meetings().meetingmail(txtmessage,txtsubject,meeting_today)
 
