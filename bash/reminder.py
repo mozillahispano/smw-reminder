@@ -253,10 +253,10 @@ class Meetings(object):
                     try:
                         meeting_three_days.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
                     except KeyError:
-                        meeting_three_days.append([user, email, meeting['label'],meeting['fechainicio'][0]])
+                        meeting_three_days.append([user, email, meeting['area'][0],meeting['fechainicio'][0]])
                     meeting_three_days = meeting_three_days[0]
                     txtmessage = u"""Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, a las %s.
-                                  \n Puedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/""" + meeting['label']
+                                  \n Puedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/""" + meeting['area'][0]
                     txtsubject = '[MozillaHispano]Reunión de %s en unos días'
                     Meetings().meetingmail(txtmessage,txtsubject,meeting_three_days)
 
@@ -271,10 +271,10 @@ class Meetings(object):
                     try:
                         meeting_today.append([user, email, meeting['proyecto'][0],meeting['fechainicio'][0]])
                     except KeyError:
-                        meeting_today.append([user, email, meeting['label'],meeting['fechainicio'][0]])
+                        meeting_today.append([user, email, meeting['area'][0],meeting['fechainicio'][0]])
                     meeting_today = meeting_today[0]
                     txtmessage = u"""Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, a las %s. 
-                                  \n Puedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/""" + meeting['label']
+                                  \n Puedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/""" + meeting['area'][0]
                     txtsubject = '[MozillaHispano]Reunión de %s en unas horas'
                     Meetings().meetingmail(txtmessage,txtsubject,meeting_today)
 
