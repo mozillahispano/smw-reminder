@@ -228,7 +228,7 @@ class Meetings(object):
     def meetingmail(self, txtmessage, txtsubject, json):
         try:
             address = json[1]
-            text = txtmessage % (json[0],json[2],json[3])
+            text = txtmessage % (json[0],json[2],json[3],json[5])
             msg = MIMEText(unicode(text).encode('utf-8'))
             msg['Subject'] = txtsubject % unicode(json[4]).encode('utf-8')
             msg['From'] = MAIL_FROM
@@ -251,12 +251,13 @@ class Meetings(object):
                     email = self.collab_new['Usuario:' + user]
                     meeting_three_days = []
                     try:
-                        meeting_three_days.append([user, email, meeting['proyecto'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0]])
+                        meeting_three_days.append([user, email, meeting['proyecto'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0],meeting['label']])
                     except KeyError:
-                        meeting_three_days.append([user, email, meeting['area'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0]])
+                        meeting_three_days.append([user, email, meeting['area'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0],meeting['label']])
                     meeting_three_days = meeting_three_days[0]
                     txtmessage = u"""Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, el próximo %s.
-                                  \n Puedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/""" + meeting['label']
+                                  \nPuedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/%s 
+                                  \nRevisa tu hora local en http://www.timeanddate.com/worldclock/fixedtime.html?iso="""+ fecha.strftime('%Y%m%dT%H%M')
                     txtsubject = '[MozillaHispano]Reunión de %s en unos días'
                     Meetings().meetingmail(txtmessage,txtsubject,meeting_three_days)
 
@@ -269,12 +270,13 @@ class Meetings(object):
                     email = self.collab_new['Usuario:' + user]
                     meeting_today = []
                     try:
-                        meeting_today.append([user, email, meeting['proyecto'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0]])
+                        meeting_today.append([user, email, meeting['proyecto'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0],meeting['label']])
                     except KeyError:
-                        meeting_today.append([user, email, meeting['area'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0]])
+                        meeting_today.append([user, email, meeting['area'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0],meeting['label']])
                     meeting_today = meeting_today[0]
                     txtmessage = u"""Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, hoy %s. 
-                                  \n Puedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/""" + meeting['label']
+                                  \n Puedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/%s
+                                  \nRevisa tu hora local en http://www.timeanddate.com/worldclock/fixedtime.html?iso="""+ fecha.strftime('%Y%m%dT%H%M')
                     txtsubject = '[MozillaHispano]Reunión de %s en unas horas'
                     Meetings().meetingmail(txtmessage,txtsubject,meeting_today)
 
