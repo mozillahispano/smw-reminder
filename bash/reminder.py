@@ -245,40 +245,40 @@ class Meetings(object):
     def meetingsthreedays(self):
         for meeting in self.meetings['items']:
             fecha = meeting['fechainicio'][0]
-            fecha = datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S')
-            fecha = fecha + timedelta(hours=localtime)
+            fechareal = datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S')
+            fecha = fechareal + timedelta(hours=localtime)
             if timedelta(days = 2) < (fecha - datetime.now()) <= timedelta(days=3):
                 for user in meeting['asistentes']:
                     email = self.collab_new['Usuario:' + user]
                     meeting_three_days = []
                     try:
-                        meeting_three_days.append([user, email, meeting['proyecto'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0],meeting['label']])
+                        meeting_three_days.append([user, email, meeting['proyecto'][0],fechareal.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0],meeting['label']])
                     except KeyError:
-                        meeting_three_days.append([user, email, meeting['area'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0],meeting['label']])
+                        meeting_three_days.append([user, email, meeting['area'][0],fechareal.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0],meeting['label']])
                     meeting_three_days = meeting_three_days[0]
                     txtmessage = u"""Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, el próximo %s.
                                   \nPuedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/%s 
-                                  \nRevisa tu hora local en http://www.timeanddate.com/worldclock/fixedtime.html?iso="""+ fecha.strftime('%Y%m%dT%H%M')
+                                  \nRevisa tu hora local en http://www.timeanddate.com/worldclock/fixedtime.html?iso="""+ fechareal.strftime('%Y%m%dT%H%M')
                     txtsubject = '[MozillaHispano]Reunión de %s en unos días'
                     Meetings().meetingmail(txtmessage,txtsubject,meeting_three_days)
 
     def meetingstoday(self):
         for meeting in self.meetings['items']:
             fecha = meeting['fechainicio'][0]
-            fecha = datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S')
-            fecha = fecha + timedelta(hours=localtime)
+            fechareal = datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S')
+            fecha = fechareal + timedelta(hours=localtime)
             if timedelta(hours = 2) < (fecha - datetime.now()) <= timedelta(hours=3):
                 for user in meeting['asistentes']:
                     email = self.collab_new['Usuario:' + user]
                     meeting_today = []
                     try:
-                        meeting_today.append([user, email, meeting['proyecto'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0],meeting['label']])
+                        meeting_today.append([user, email, meeting['proyecto'][0],fechareal.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0],meeting['label']])
                     except KeyError:
-                        meeting_today.append([user, email, meeting['area'][0],fecha.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0],meeting['label']])
+                        meeting_today.append([user, email, meeting['area'][0],fechareal.strftime('%d de %b a las %H:%M UTC'),meeting['area'][0],meeting['label']])
                     meeting_today = meeting_today[0]
                     txtmessage = u"""Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, hoy %s. 
                                   \n Puedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/%s
-                                  \nRevisa tu hora local en http://www.timeanddate.com/worldclock/fixedtime.html?iso="""+ fecha.strftime('%Y%m%dT%H%M')
+                                  \nRevisa tu hora local en http://www.timeanddate.com/worldclock/fixedtime.html?iso="""+ fechareal.strftime('%Y%m%dT%H%M')
                     txtsubject = '[MozillaHispano]Reunión de %s en unas horas'
                     Meetings().meetingmail(txtmessage,txtsubject,meeting_today)
 
