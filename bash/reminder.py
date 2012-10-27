@@ -262,8 +262,7 @@ class Meetings(object):
                         pass
 
     def meetingsthreedays(self):
-        #condition = [timedelta(days = 2), timedelta(days = 3)]
-        condition = [timedelta(days = 0), timedelta(days = 3)]
+        condition = [timedelta(days = 2), timedelta(days = 3)]
         txtmessage = u"""Hola %s, \n\n Te recordamos que estas registrado para asistir a la reunión de %s, el próximo %s.
                       \nPuedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/%s 
                       \nRevisa tu hora local en http://www.timeanddate.com/worldclock/fixedtime.html?iso=%s"""
