@@ -276,7 +276,7 @@ class Meetings(object):
                       \n Puedes ver más información acerca de la reunión en: https://www.mozilla-hispano.org/documentacion/%s
                       \nRevisa tu hora local en http://www.timeanddate.com/worldclock/fixedtime.html?iso=%s"""
         txtsubject = '[MozillaHispano]Reunión de %s en unas horas'
-        Meetings().separatemeeting(txtmessage,txtsubject,condition)
+        Meetings().separatemeetings(txtmessage,txtsubject,condition)
 
 def tasks(parsed_args):
     Tasks().getTasks()
