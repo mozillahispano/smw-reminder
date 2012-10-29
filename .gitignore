@@ -1,5 +1,5 @@
 *.pyc
 env
 *.json
-bash/local_config.py
+local_config.py
 *.swp
