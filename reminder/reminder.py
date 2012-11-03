@@ -104,50 +104,32 @@ class Tasks(object):
         json_tasks = urllib2.urlopen(TASKS_URL).read()
         self.tasks = json.loads(json_tasks)
 
-    def getTasks(self):
-        tasks_overdue = []
-        tasks_threedays = []
-        tasks_onday = []
+    def getTasks(self, txtmessage, txtsubject, condition):
+        tasks_json = []
         for task in self.tasks['items']:
-            dueToday = False
-            dueInThreeDays = False
-            overdue = False
             # Get the date limit and figure out if we need to do anything.
             if u'límite' in task:
                 limit = task[u'límite'][0]
-                datelimit = datetime.strptime(limit   , '%Y-%m-%d %H:%M:%S')
-                if timedelta(hours = 1) < (datelimit - datetime.now()) <= timedelta(hours = 24):
-                    dueToday = True
-                elif timedelta(days = 1) < (datelimit -datetime.now()) <= timedelta(days = 3):
-                    dueInThreeDays = True
-                elif (datetime.now() - datelimit) > timedelta (hours = 1) :
-                    overdue = True
-            # Figure out who to send the message to.
-            if (dueToday | dueInThreeDays | overdue):
-                assignees = []
-                # Get assignees from task.
-                if 'respon.' in task:
-                    for user in task['respon.']:
-                        userString = 'Usuario:' + user
-                        if userString in self.collab_new:
-                            assignees.append(user)
-                # If there are none, get area owners.
-                if len(assignees) == 0:
-                    if 'area' in task:
-                        assignees = getAreaOwners(task['area'][0],self.collab_new)
+                datelimit = datetime.strptime(limit , '%Y-%m-%d %H:%M:%S')
+                if condition[0] < (datelimit - datetime.now()) <= condition[1]:
+                    assignees = []
+                    # Get assignees from task.
+                    if 'respon.' in task:
+                        for user in task['respon.']:
+                            userString = 'Usuario:' + user
+                            if userString in self.collab_new:
+                                assignees.append(user)
+                        # If there are none, get area owners.
                     if len(assignees) == 0:
-                        print 'Due task "' + task['label'] + '" has no one responsible for it.'
-                for assignee in assignees:
-                    email = self.collab_new['Usuario:' + assignee]
-                    if dueToday:
-                        tasks_onday.append([assignee, email, task['label'], limit])
-                    elif dueInThreeDays:
-                        tasks_threedays.append([assignee, email, task['label'], limit])
-                    elif overdue:
-                        tasks_overdue.append([assignee, email, task['label'], limit])
-        Tasks().taskoverdue(tasks_overdue)
-        Tasks().taskthreedays(tasks_threedays)
-        Tasks().taskonday(tasks_onday)
+                        pass
+                        #if 'area' in task:
+                        #    assignees = getAreaOwners(task['area'][0],self.collab_new)
+                        #if len(assignees) == 0:
+                        #    print 'Due task "' + task['label'] + '" has no one responsible for it.'
+                    for assignee in assignees:
+                        email = self.collab_new['Usuario:' + assignee]
+                        tasks_json.append([assignee, email, task['label'], limit])
+        Tasks().send_mail(txtmessage, txtsubject, tasks_json)
 
     def tasksmail(self, txtmessage, txtsubject, k, v):
         try:
@@ -192,29 +174,32 @@ class Tasks(object):
                 # TODO: show a 'no email address for user X' error.
                 pass
 
-    def taskoverdue(self, tasks_list):
+    def taskoverdue(self):
         '''
         text for message and subject for overdue tasks
         '''
+        condition = [timedelta(weeks = -1000), timedelta(hours = 0)]
         txtmessage = u"Hola %s, \n\nActualmente tienes %s tarea(s) asignada(s) a ti que están caducadas. Por favor revisa su estado y marcalas como finalizadas o amplia su fecha límite \n"
         txtsubject = '[Mozilla Hispano] Tienes %s tareas caducadas'
-        Tasks().send_mail(txtmessage, txtsubject, tasks_list)
+        Tasks().getTasks(txtmessage, txtsubject, condition)
 
-    def taskthreedays(self, tasks_list):
+    def taskthreedays(self):
         '''
         text for message and subject for tasks that mature in three days
         '''
+        condition = [timedelta(days = 1), timedelta(days = 3)]
         txtmessage = u"Hola %s, \n\nActualmente tienes %s tarea(s) asignada(s) a ti que están a punto de caducar. \n"
         txtsubject = '[Mozilla Hispano] Tienes %s tareas a punto de caducar'
-        Tasks().send_mail(txtmessage, txtsubject,tasks_list)
+        Tasks().getTasks(txtmessage, txtsubject, condition)
 
-    def taskonday(self, tasks_list):
+    def taskonday(self):
         '''
         text for message and subject for tasks that mature today
         '''
+        condition = [timedelta(hours = 1), timedelta(hours = 24)]
         txtmessage = u"Hola %s, \n\nActualmente tienes %s tarea(s) asignada(s) a ti que caducan hoy. Por favor revisa su estado y actualizalas acordemente \n"
         txtsubject = '[Mozilla Hispano] Tienes %s tareas que caducan hoy'
-        Tasks().send_mail(txtmessage, txtsubject, tasks_list)
+        Tasks().getTasks(txtmessage, txtsubject, condition)
 
 
 # meetings reminder
@@ -279,10 +264,9 @@ class Meetings(object):
         Meetings().separatemeetings(txtmessage,txtsubject,condition)
 
 def tasks(parsed_args):
-    Tasks().getTasks()
-    #Tasks().taskoverdue()
-    #Tasks().taskthreedays()
-    #Tasks().taskonday()
+    Tasks().taskoverdue()
+    Tasks().taskthreedays()
+    Tasks().taskonday()
 
 def meeting_threedays(parsed_args):
     Meetings().meetingsthreedays()
