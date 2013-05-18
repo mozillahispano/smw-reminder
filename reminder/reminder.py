@@ -20,7 +20,7 @@ MEETINGS_URL = 'https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5
 # Dictionary that maps areas to an array of owner email addresses.
 areaOwners = {}
 
-def convertToEmailAddress(emailString):
+def convert_to_email(emailString):
     '''
     Converts the email string into a valid email address. This is necessary
     because addresses can be obfuscated (name ARROBA server PUNTO com).
@@ -69,22 +69,25 @@ def collaborators(collab_new):
     we get json from media wiki with this structure:
         colab['items'][n]['label']
         colab['items'][n]['correo']
-    but this is not usable and mails isn't in mail format, this is for solve that.
+    but this is not usable and mails isn't in mail format, this is for
+    solve that.
     '''
     json_collab = urllib2.urlopen(COLLABORATORS_URL).read()
     collab = json.loads(json_collab)
-    n = len(collab["items"])
+    get_collab(collab, collab_new)
 
+def get_collab(collab, collab_new):
+    '''
+    for each collaborator we get a dictionary with collaborators name
+    (ncollab) and collaborators mail (mcollab)
+    '''
+    n = len(collab["items"])
     for var in range(n):
-        '''
-        for each collaborator we get a dictionary with collaborators name (ncollab) and collaborators mail (mcollab)
-        '''
         ncollab = collab['items'][int(var)]['label']
         try:
-            mcollab = convertToEmailAddress(collab['items'][int(var)]['correo'][0])
+            mcollab = convert_to_email(collab['items'][int(var)]['correo'][0])
         except KeyError:
             mcollab = ''
-
         collab_new.update({ncollab:mcollab})
     return collab_new
 
@@ -94,8 +97,10 @@ class Tasks(object):
         tasks['items'][n]['respon.']
         tasks['items'][n]['label']
         tasks['items'][n][u'límite']
-    this is to append collaborator mail with this data and separate tasks according to date limit: if is overdue (tasks_overdue),
-    that mature in three days (tasks_threedays) and that mature today (tasks_onday)
+    this is to append collaborator mail with this data and separate tasks
+    according to date limit: if is overdue (tasks_overdue),
+    that mature in three days (tasks_threedays) and that mature today
+    (tasks_onday)
     '''
     def __init__(self):
         self.collab_new = {}
@@ -103,8 +108,7 @@ class Tasks(object):
         json_tasks = urllib2.urlopen(TASKS_URL).read()
         self.tasks = json.loads(json_tasks)
 
-    def getTasks(self, txtmessage, txtsubject, condition):
-        tasks_json = []
+    def getTasks(self, condition, tasks_json):
         for task in self.tasks['items']:
             # Get the date limit and figure out if we need to do anything.
             if u'límite' in task:
@@ -121,13 +125,15 @@ class Tasks(object):
                         # If there are none, get area owners.
                     if len(assignees) == 0:
                         pass
-                        #if 'area' in task:
-                        #    assignees = getAreaOwners(task['area'][0],self.collab_new)
-                        #if len(assignees) == 0:
-                        #    print 'Due task "' + task['label'] + '" has no one responsible for it.'
+                        #TODO: implement getAreaOwners
                     for assignee in assignees:
                         email = self.collab_new['Usuario:' + assignee]
                         tasks_json.append([assignee, email, task['label'], limit])
+        return tasks_json
+
+    def send_tasks(self, txtmessage, txtsubject, condition):
+        tasks_json = []
+        Tasks().getTasks(condition, tasks_json)
         Tasks().send_mail(txtmessage, txtsubject, tasks_json)
 
     def tasksmail(self, txtmessage, txtsubject, k, v):
@@ -159,12 +165,14 @@ class Tasks(object):
         d = defaultdict(list)
         for resp,mailresp,label,limit in tasks_list:
             '''
-            for order tasks (label) for each collaborator, result a dict with 2 items
+            for order tasks (label) for each collaborator, result a dict
+            with 2 items
             '''
             d[resp,mailresp].append(label)
         for k,v in d.items():
             '''
-            lines before, we get a dict (d) with 2 items. Now I parse this items (k,v) in mail message
+            lines before, we get a dict (d) with 2 items. Now I parse this
+            items (k,v) in mail message
             '''
             toAddress = k[1]
             if (toAddress != ''):
@@ -179,8 +187,8 @@ class Tasks(object):
         '''
         condition = [timedelta(weeks = -1000), timedelta(hours = 0)]
         txtmessage = u"Hola %s, \n\nActualmente tienes %s tarea(s) asignada(s) a ti que están caducadas. Por favor revisa su estado y marcalas como finalizadas o amplia su fecha límite \n"
-        txtsubject = '[Mozilla Hispano] Tienes %s tareas caducadas'
-        Tasks().getTasks(txtmessage, txtsubject, condition)
+        txtsubject = '[Mozilla Hispano] Tienes %s tarea(s) caducada(s)'
+        Tasks().send_tasks(txtmessage, txtsubject, condition)
 
     def taskthreedays(self):
         '''
@@ -189,7 +197,7 @@ class Tasks(object):
         condition = [timedelta(days = 1), timedelta(days = 3)]
         txtmessage = u"Hola %s, \n\nActualmente tienes %s tarea(s) asignada(s) a ti que están a punto de caducar. \n"
         txtsubject = '[Mozilla Hispano] Tienes %s tareas a punto de caducar'
-        Tasks().getTasks(txtmessage, txtsubject, condition)
+        Tasks().send_tasks(txtmessage, txtsubject, condition)
 
     def taskonday(self):
         '''
@@ -198,7 +206,7 @@ class Tasks(object):
         condition = [timedelta(hours = 1), timedelta(hours = 24)]
         txtmessage = u"Hola %s, \n\nActualmente tienes %s tarea(s) asignada(s) a ti que caducan hoy. Por favor revisa su estado y actualizalas acordemente \n"
         txtsubject = '[Mozilla Hispano] Tienes %s tareas que caducan hoy'
-        Tasks().getTasks(txtmessage, txtsubject, condition)
+        Tasks().send_tasks(txtmessage, txtsubject, condition)
 
 
 # meetings reminder
