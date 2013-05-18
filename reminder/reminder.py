@@ -7,7 +7,6 @@ import json
 import smtplib
 import string
 import re
-import argparse
 from email.mime.text import MIMEText
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -262,23 +261,3 @@ class Meetings(object):
                       \nRevisa tu hora local en http://www.timeanddate.com/worldclock/fixedtime.html?iso=%s"""
         txtsubject = '[MozillaHispano]Reunión de %s en unas horas'
         Meetings().separatemeetings(txtmessage,txtsubject,condition)
-
-def tasks(parsed_args):
-    Tasks().taskoverdue()
-    Tasks().taskthreedays()
-    Tasks().taskonday()
-
-def meeting_threedays(parsed_args):
-    Meetings().meetingsthreedays()
-
-def meeting_today(parsed_args):
-    Meetings().meetingstoday()
-
-parser=argparse.ArgumentParser()
-parser.add_argument('--tasks', dest='action', action='store_const', const=tasks, help='reminder for tasks')
-parser.add_argument('--meetings-threedays', dest='action', action='store_const', const=meeting_threedays, help='reminder for meetings into three days')
-parser.add_argument('--meetings-today', dest='action', action='store_const', const=meeting_today, help= 'reminder for meetings today')
-parsed_args = parser.parse_args()
-if parsed_args.action is None:
-    parser.parse_args(['-h'])
-parsed_args.action(parsed_args)
