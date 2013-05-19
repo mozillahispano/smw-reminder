@@ -10,7 +10,7 @@ import re
 from email.mime.text import MIMEText
 from collections import defaultdict
 from datetime import datetime, timedelta
-from local_config import *
+import local_config as config
 
 TASKS_URL = 'https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategor%C3%ADa:Tarea-5D-5D-5B-5Bestado::!Finalizado-5D-5D/-3FResponsable%3DRespon./-3FArea/-3FProyecto/-3FEstado/-3FFechafin%3DL%C3%ADmite/mainlabel%3D/order%3DASC,ASC/sort%3DFechafin,Estado/format%3Djson/limit%3D1000'
 COLLABORATORS_URL = 'https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategoría:Colaborador-5D-5D/-3FCorreo/mainlabel%3D/format%3Djson/limit%3D1000'
@@ -146,13 +146,13 @@ class Tasks(object):
             text = text + '\n\nSaludos'
             msg = MIMEText(unicode(text).encode('utf-8'))
             msg['Subject'] = txtsubject % numtasks
-            msg['From'] = MAIL_FROM
+            msg['From'] = config.MAIL_FROM
             msg['To'] = k[1]
             msg.set_charset('utf-8')
-            server = smtplib.SMTP(HOST)
+            server = smtplib.SMTP(config.HOST)
             server.starttls()
-            server.login(username,password)
-            server.sendmail(MAIL_FROM, k[1], msg.as_string())
+            server.login(config.username,config.password)
+            server.sendmail(config.MAIL_FROM, k[1], msg.as_string())
             server.quit()
         except Exception:
             pass
@@ -227,13 +227,13 @@ class Meetings(object):
             text = txtmessage % (json[0],json[2],json[3],json[5],json[6])
             msg = MIMEText(unicode(text).encode('utf-8'))
             msg['Subject'] = txtsubject % unicode(json[4]).encode('utf-8')
-            msg['From'] = MAIL_FROM
+            msg['From'] = config.MAIL_FROM
             msg['To'] = address
             msg.set_charset('utf-8')
-            server = smtplib.SMTP(HOST)
+            server = smtplib.SMTP(config.HOST)
             server.starttls()
-            server.login(username,password)
-            server.sendmail(MAIL_FROM, address, msg.as_string())
+            server.login(config.username,config.password)
+            server.sendmail(config.MAIL_FROM, address, msg.as_string())
             server.quit
         except Exception:
             pass
@@ -242,7 +242,7 @@ class Meetings(object):
         for meeting in self.meetings['items']:
             fecha = meeting['fechainicio'][0]
             fecha = datetime.strptime(fecha, '%Y-%m-%d %H:%M:%S')
-            if condition[0] < (fecha - datetime.now() + timedelta(hours = localtime)) <= condition[1]:
+            if condition[0] < (fecha - datetime.now() + timedelta(hours = config.localtime)) <= condition[1]:
                 for user in meeting['asistentes']:
                     json = []
                     try:
