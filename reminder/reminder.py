@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import urllib
-import urllib2
+import requests
 import json
 import smtplib
 import string
@@ -47,8 +47,7 @@ def getAreaOwners(area, collab_new):
 
         if quotedArea not in areaOwners:
             ownerURL = AREA_OWNER_URL + '[[' + quotedArea + ']]'
-            ownerJSON = urllib2.urlopen(ownerURL).read()
-            ownerObj = json.loads(ownerJSON)
+            ownerObj = requests.get(ownerURL).json()
 
             for ownerList in ownerObj['items']:
                 for owner in ownerList['responsable']:
@@ -72,8 +71,7 @@ def collaborators(collab_new):
     but this is not usable and mails isn't in mail format, this is for
     solve that.
     '''
-    json_collab = urllib2.urlopen(COLLABORATORS_URL).read()
-    collab = json.loads(json_collab)
+    collab = requests.get(COLLABORATORS_URL).json()
     get_collab(collab, collab_new)
 
 def get_collab(collab, collab_new):
@@ -105,8 +103,7 @@ class Tasks(object):
     def __init__(self):
         self.collab_new = {}
         collaborators(self.collab_new)
-        json_tasks = urllib2.urlopen(TASKS_URL).read()
-        self.tasks = json.loads(json_tasks)
+        self.tasks = requests.get(TASKS_URL).json()
 
     def getTasks(self, condition, tasks, tasks_response, collab):
         for task in tasks['items']:
@@ -218,8 +215,7 @@ class Meetings(object):
     def __init__(self):
         self.collab_new = {}
         collaborators(self.collab_new)
-        json_meeting = urllib2.urlopen(MEETINGS_URL).read()
-        self.meetings = json.loads(json_meeting)
+        self.meetings = requests.get(MEETINGS_URL).json()
 
     def meetingmail(self, txtmessage, txtsubject, json):
         try:
