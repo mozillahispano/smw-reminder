@@ -108,8 +108,8 @@ class Tasks(object):
         json_tasks = urllib2.urlopen(TASKS_URL).read()
         self.tasks = json.loads(json_tasks)
 
-    def getTasks(self, condition, tasks_json):
-        for task in self.tasks['items']:
+    def getTasks(self, condition, tasks, tasks_response, collab):
+        for task in tasks['items']:
             # Get the date limit and figure out if we need to do anything.
             if u'límite' in task:
                 limit = task[u'límite'][0]
@@ -118,23 +118,22 @@ class Tasks(object):
                     assignees = []
                     # Get assignees from task.
                     if 'respon.' in task:
-                        for user in task['respon.']:
-                            userString = 'Usuario:' + user
-                            if userString in self.collab_new:
-                                assignees.append(user)
-                        # If there are none, get area owners.
+                        Tasks().get_assignees(task, collab, assignees)
+                    # If there are none, get area owners.
                     if len(assignees) == 0:
                         pass
                         #TODO: implement getAreaOwners
                     for assignee in assignees:
-                        email = self.collab_new['Usuario:' + assignee]
-                        tasks_json.append([assignee, email, task['label'], limit])
-        return tasks_json
+                        email = collab['Usuario:' + assignee]
+                        tasks_response.append([assignee, email, task['label'], limit])
+        return tasks_response
 
-    def send_tasks(self, txtmessage, txtsubject, condition):
-        tasks_json = []
-        Tasks().getTasks(condition, tasks_json)
-        Tasks().send_mail(txtmessage, txtsubject, tasks_json)
+    def get_assignees(self, task, collab, assignees):
+        for user in task['respon.']:
+            userString = 'Usuario:' + user
+            if userString in collab:
+                assignees.append(user)
+        return assignees
 
     def tasksmail(self, txtmessage, txtsubject, k, v):
         try:
@@ -180,6 +179,11 @@ class Tasks(object):
             else:
                 # TODO: show a 'no email address for user X' error.
                 pass
+
+    def send_tasks(self, txtmessage, txtsubject, condition):
+        tasks_json = []
+        Tasks().getTasks(condition, self.tasks, tasks_json, self.collab_new)
+        Tasks().send_mail(txtmessage, txtsubject, tasks_json)
 
     def taskoverdue(self):
         '''
