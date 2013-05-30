@@ -2,6 +2,13 @@
 
 MozReminder is a script that fetches the list of pending tasks on Mozilla Hispano, as well as their owners, and sends email reminders letting them know when they are overdue or close to being overdue.
 
+## Requirements
+
+Install requirements
+```bash
+pip install -r requirements/requirements.txt
+```
+
 ## Config
 
 Create ``local_config.py``. You can use ``local_config.py.example`` and edit it.
@@ -17,7 +24,7 @@ password = 'password'
 
 ## Use
 ```bash
-python reminder.py --<option>
+python smw-reminder.py --<option>
 ```
 ###options:
 ``--tasks`` for tasks
