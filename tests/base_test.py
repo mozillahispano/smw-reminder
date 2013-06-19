@@ -1,20 +1,19 @@
 import pytest
 import unittest
 
-from reminder.reminder import convert_to_email
-from reminder.reminder import get_collab
-from reminder.reminder import Tasks
+from reminder.reminder import Base
+from reminder.tasks import Tasks
 from datetime import datetime, timedelta
 
 def test_convert_to_email_0():
     ''' Should convert string in valid email '''
     email = 'cesar ARROBA mozilla DOT pe'
-    assert convert_to_email(email) == 'cesar@mozilla.pe'
+    assert Base().convert_to_email(email) == 'cesar@mozilla.pe'
 
 def test_convert_to_email_1():
     ''' Should convert string in valid email '''
     email = 'cesar AT mozilla punto pe'
-    assert convert_to_email(email) == 'cesar@mozilla.pe'
+    assert Base().convert_to_email(email) == 'cesar@mozilla.pe'
 
 def test_get_collaborators_0():
     ''' Should return dict (name:mail) '''
@@ -23,7 +22,7 @@ def test_get_collaborators_0():
             u'properties': {u'correo': {u'valueType': u'text'}}}
     collab_new = {}
     expected = {u'Usuario:ccarruitero': u'cesar@mozilla.pe'}
-    assert get_collab(json0, collab_new) == expected
+    assert Base().get_collab(json0, collab_new) == expected
 
 def test_get_collaborators_1():
     ''' Should return dict (name:mail) '''
@@ -35,6 +34,7 @@ def test_get_collaborators_1():
     collab_new = {}
     expected = {u'Usuario:user0': u'name@domain.com',
                 u'Usuario:user1': u'another@mail.com'}
+    assert Base().get_collab(json0, collab_new) == expected
 
 class TasksTest(unittest.TestCase):
     def setUp(self):
