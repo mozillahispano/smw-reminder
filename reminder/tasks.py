@@ -1,8 +1,13 @@
 #!/env/bin/python
 # -*- coding: utf-8 -*-
 import requests
+import smtplib
+import pdb
+import local_config as config
 from reminder import Base
 from datetime import datetime, timedelta
+from collections import defaultdict
+from email.mime.text import MIMEText
 
 TASKS_URL = 'https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategor%C3%ADa:Tarea-5D-5D-5B-5Bestado::!Finalizado-5D-5D/-3FResponsable%3DRespon./-3FArea/-3FProyecto/-3FEstado/-3FFechafin%3DL%C3%ADmite/mainlabel%3D/order%3DASC,ASC/sort%3DFechafin,Estado/format%3Djson/limit%3D1000'
 
@@ -71,12 +76,12 @@ class Tasks(Base):
         except Exception:
             pass
 
-    def send_mail(self, txtmessage, txtsubject, tasks_list):
+    def send_mail(self, txtmessage, txtsubject, tasks_json):
         '''
         send mails for each collaborator
         '''
         d = defaultdict(list)
-        for resp,mailresp,label,limit in tasks_list:
+        for resp,mailresp,label,limit in tasks_json:
             '''
             for order tasks (label) for each collaborator, result a dict
             with 2 items
@@ -89,7 +94,7 @@ class Tasks(Base):
             '''
             toAddress = k[1]
             if (toAddress != ''):
-                Tasks().tasksmail(txtmessage, txtsubject, k,v)
+                self.tasksmail(txtmessage, txtsubject, k,v)
             else:
                 # TODO: show a 'no email address for user X' error.
                 pass

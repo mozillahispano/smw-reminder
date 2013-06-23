@@ -1,10 +1,10 @@
-import reminder
 import argparse
+from tasks import Tasks
 
 def tasks(parsed_args):
-    reminder.Tasks().taskoverdue()
-    reminder.Tasks().taskthreedays()
-    reminder.Tasks().taskonday()
+    Tasks().taskoverdue()
+    Tasks().taskthreedays()
+    Tasks().taskonday()
 
 def meeting_threedays(parsed_args):
     reminder.Meetings().meetingsthreedays()
