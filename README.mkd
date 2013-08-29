@@ -32,7 +32,19 @@ python smw-reminder.py --<option>
 
 ## Test
 
-To test this you need a local SMTP server. You can do this with:
+### pytest
+For tests you need install tests requirements
+```bash
+pip install -r requirements/tests.txt
+```
+
+Then you can run tests with
+```bash
+py.test
+```
+
+### local SMTP
+Another way you can test this is trying in your local machine, for this you need a local SMTP server. You can do this with:
 
 ```
 python -m smtpd -n -c DebuggingServer localhost:1025
