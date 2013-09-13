@@ -1,7 +1,6 @@
 #!/env/bin/python
 # -*- coding: utf-8 -*-
 
-import urllib
 import requests
 import json
 import smtplib
@@ -12,7 +11,7 @@ from datetime import datetime, timedelta
 import local_config as config
 
 COLLABORATORS_URL = config.MAIN_URL + '&q=[[Category:Colaborador]]&po=?Correo&p[format]=json&p[limit]=1000'
-AREA_OWNER_URL = config.MAIN_URL + '&po=?Responsable&p[format]=json&q='
+AREA_OWNER_URL = config.MAIN_URL + '&po=?Responsable&p[format]=json&q=[[%s]]'
 
 class Base(object):
 
@@ -32,33 +31,27 @@ class Base(object):
         email = email.replace(' ', '_')
         return email
 
-    def getAreaOwners(self, area, collab_new):
+    def get_area_owners(self, area, area_owners):
         '''
         Gets the user information of the owners of the given focus area.
         '''
-        owners = []
-        areaOwners = {}
+        if area not in area_owners:
+            owner_url = AREA_OWNER_URL % area
+            owners = requests.get(ownerURL).json()
+            area_owners.update({ area: owners['items'][0]['responsable']})
+        return area_owners
 
-        if len(area) != 0:
-            quotedArea = urllib.quote_plus(area.encode('utf-8'))
+    def get_owner_data(self, area, area_owners, collab_new, owner_array):
+        for owner in area_owners[area]:
+            user = 'Usuario:' + owner
+            if user in collab_new:
+                owner_array.append(owner)
+        return owner_array
 
-            if quotedArea not in areaOwners:
-                ownerURL = AREA_OWNER_URL + '[[' + quotedArea + ']]'
-                ownerObj = requests.get(ownerURL).json()
-
-                for ownerList in ownerObj['items']:
-                    for owner in ownerList['responsable']:
-                        userString = 'Usuario:' + owner
-
-                        if userString in collab_new:
-                            owners.append(owner)
-                    # Save locally for future use.
-                    areaOwners[quotedArea] = owners
-            else:
-                # Use saved copy instead of fetching it again.
-                owners = areaOwners[quotedArea]
-        return owners
-
+    def report_to_owner(self, area, area_owners, collab_new):
+        owner_array = []
+        self.get_area_owner(area, area_owners)
+        self.get_owner_data(area, area_owners, collab_new, owner_array)
 
     def collaborators(self, collab_new):
         '''
