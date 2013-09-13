@@ -11,8 +11,8 @@ from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 import local_config as config
 
-COLLABORATORS_URL = 'https://www.mozilla-hispano.org/documentacion/Especial:Ask/-5B-5BCategoría:Colaborador-5D-5D/-3FCorreo/mainlabel%3D/format%3Djson/limit%3D1000'
-AREA_OWNER_URL = 'https://www.mozilla-hispano.org/documentacion/index.php?title=Especial%3AAsk&po=%3FResponsable%0D%0A&p[format]=json&q='
+COLLABORATORS_URL = config.MAIN_URL + '&q=[[Category:Colaborador]]&po=?Correo&p[format]=json&p[limit]=1000'
+AREA_OWNER_URL = config.MAIN_URL + '&po=?Responsable&p[format]=json&q='
 
 class Base(object):
 
